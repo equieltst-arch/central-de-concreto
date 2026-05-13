@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -13,7 +14,6 @@
     --border: #2a3045;
     --accent: #e8a020;
     --accent2: #f0c060;
-    --accent-dim: rgba(232,160,32,0.12);
     --red: #e05050;
     --green: #3ec47a;
     --blue: #4a9eff;
@@ -27,90 +27,38 @@
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--font-body); font-size: 14px; }
-
-  /* ── APP SHELL ── */
   #app { display: flex; height: 100vh; flex-direction: column; }
-
-  /* TOP BAR */
-  .topbar {
-    display: flex; align-items: center; gap: 16px;
-    padding: 0 24px; height: 52px;
-    background: var(--surface); border-bottom: 1px solid var(--border);
-    flex-shrink: 0;
-  }
+  .topbar { display: flex; align-items: center; gap: 16px; padding: 0 24px; height: 52px; background: var(--surface); border-bottom: 1px solid var(--border); flex-shrink: 0; }
   .topbar-logo { font-family: var(--font-head); font-size: 20px; font-weight: 800; color: var(--accent); letter-spacing: 1px; white-space: nowrap; }
   .topbar-title { font-size: 12px; color: var(--text-dim); text-transform: uppercase; letter-spacing: .8px; flex: 1; }
-
-  /* NAV TABS */
-  .nav-tabs {
-    display: flex; gap: 2px; padding: 0 24px;
-    background: var(--surface); border-bottom: 2px solid var(--border);
-    flex-shrink: 0;
-  }
-  .nav-tab {
-    padding: 10px 20px; font-family: var(--font-head); font-size: 14px;
-    font-weight: 600; letter-spacing: .5px; text-transform: uppercase;
-    color: var(--text-dim); cursor: pointer; border-bottom: 2px solid transparent;
-    margin-bottom: -2px; transition: all .2s; white-space: nowrap;
-    background: none; border-top: none; border-left: none; border-right: none;
-  }
+  .nav-tabs { display: flex; gap: 2px; padding: 0 24px; background: var(--surface); border-bottom: 2px solid var(--border); flex-shrink: 0; }
+  .nav-tab { padding: 10px 20px; font-family: var(--font-head); font-size: 14px; font-weight: 600; letter-spacing: .5px; text-transform: uppercase; color: var(--text-dim); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all .2s; white-space: nowrap; background: none; border-top: none; border-left: none; border-right: none; }
   .nav-tab:hover { color: var(--text); }
   .nav-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
-
-  /* MAIN CONTENT */
   .main { flex: 1; overflow-y: auto; padding: 24px; }
-
-  /* PAGE */
   .page { display: none; }
   .page.active { display: block; }
-
-  /* SECTION HEADER */
-  .section-header {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 20px;
-  }
+  .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
   .section-title { font-family: var(--font-head); font-size: 24px; font-weight: 800; letter-spacing: .5px; }
   .section-title span { color: var(--accent); }
-
-  /* CARD */
-  .card {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--radius); padding: 20px;
-    margin-bottom: 16px;
-  }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 16px; }
   .card-title { font-family: var(--font-head); font-size: 16px; font-weight: 700; letter-spacing: .5px; margin-bottom: 16px; color: var(--accent2); text-transform: uppercase; }
-
-  /* GRID */
   .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
   .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
   .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
-  @media(max-width:900px) {
-    .grid-4 { grid-template-columns: 1fr 1fr; }
-    .grid-3 { grid-template-columns: 1fr 1fr; }
-    .grid-2 { grid-template-columns: 1fr; }
-  }
-
-  /* FORM ELEMENTS */
+  @media(max-width:900px) { .grid-4 { grid-template-columns: 1fr 1fr; } .grid-3 { grid-template-columns: 1fr 1fr; } .grid-2 { grid-template-columns: 1fr; } }
   .form-group { margin-bottom: 14px; }
   .form-group label { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: .8px; color: var(--text-dim); margin-bottom: 5px; }
-  .form-group input, .form-group select, .form-group textarea {
-    width: 100%; padding: 8px 12px; background: var(--bg);
-    border: 1px solid var(--border); border-radius: var(--radius);
-    color: var(--text); font-size: 14px; font-family: var(--font-body); outline: none; transition: border .2s;
-  }
+  .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 8px 12px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); color: var(--text); font-size: 14px; font-family: var(--font-body); outline: none; transition: border .2s; }
   .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--accent); }
   .form-group select option { background: var(--surface2); }
   .form-group textarea { resize: vertical; min-height: 60px; }
-
-  /* BUTTONS */
-  .btn { padding: 8px 18px; border-radius: var(--radius); font-family: var(--font-head); font-size: 14px; font-weight: 700; letter-spacing: .5px; cursor: pointer; border: none; transition: opacity .2s, background .2s; }
+  .btn { padding: 8px 18px; border-radius: var(--radius); font-family: var(--font-head); font-size: 14px; font-weight: 700; letter-spacing: .5px; cursor: pointer; border: none; transition: opacity .2s; }
   .btn:hover { opacity: .85; }
   .btn-primary { background: var(--accent); color: #111; }
   .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
   .btn-danger { background: var(--red); color: #fff; }
   .btn-sm { padding: 4px 10px; font-size: 12px; }
-
-  /* TABLE */
   .table-wrap { overflow-x: auto; }
   table { width: 100%; border-collapse: collapse; font-size: 13px; }
   thead tr { border-bottom: 2px solid var(--border); }
@@ -123,71 +71,40 @@
   .badge-yellow { background: rgba(232,160,32,.15); color: var(--accent); }
   .badge-red { background: rgba(224,80,80,.15); color: var(--red); }
   .badge-blue { background: rgba(74,158,255,.15); color: var(--blue); }
-
-  /* STAT CARDS */
-  .stat-card {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--radius); padding: 18px 20px;
-  }
+  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; }
   .stat-label { font-size: 11px; text-transform: uppercase; letter-spacing: .8px; color: var(--text-dim); margin-bottom: 6px; }
   .stat-value { font-family: var(--font-head); font-size: 32px; font-weight: 800; line-height: 1; }
   .stat-unit { font-size: 13px; color: var(--text-dim); margin-left: 4px; font-family: var(--font-body); font-weight: 400; }
   .stat-sub { font-size: 12px; color: var(--text-dim); margin-top: 4px; }
-
-  /* PROGRESS BAR */
   .progress-bar { height: 6px; background: var(--border); border-radius: 3px; margin-top: 8px; overflow: hidden; }
   .progress-fill { height: 100%; border-radius: 3px; transition: width .5s; }
-
-  /* ALERT */
   .alert { padding: 10px 14px; border-radius: var(--radius); font-size: 13px; margin-bottom: 12px; }
-  .alert-warn { background: rgba(232,160,32,.1); border: 1px solid rgba(232,160,32,.3); color: var(--accent2); }
   .alert-danger { background: rgba(224,80,80,.1); border: 1px solid rgba(224,80,80,.3); color: var(--red); }
   .alert-success { background: rgba(62,196,122,.1); border: 1px solid rgba(62,196,122,.3); color: var(--green); }
-
-  /* MODAL */
   .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.7); display: none; align-items: center; justify-content: center; z-index: 200; padding: 20px; }
   .modal-overlay.open { display: flex; }
   .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 28px; width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; box-shadow: var(--shadow); }
   .modal-title { font-family: var(--font-head); font-size: 20px; font-weight: 800; margin-bottom: 20px; color: var(--accent2); text-transform: uppercase; }
   .modal-footer { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
-
-  /* INLINE FORM */
   .inline-row { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; }
   .inline-row .form-group { margin-bottom: 0; flex: 1; min-width: 120px; }
-
-  /* EMPTY STATE */
   .empty { text-align: center; padding: 40px; color: var(--text-muted); font-size: 14px; }
   .empty-icon { font-size: 32px; margin-bottom: 8px; }
-
-  /* TOAST */
   #toast { position: fixed; bottom: 24px; right: 24px; z-index: 999; }
-  .toast-item {
-    background: var(--surface2); border: 1px solid var(--border);
-    border-left: 3px solid var(--green); padding: 10px 16px;
-    border-radius: var(--radius); margin-top: 8px; font-size: 13px;
-    box-shadow: var(--shadow); animation: slideIn .3s ease;
-  }
+  .toast-item { background: var(--surface2); border: 1px solid var(--border); border-left: 3px solid var(--green); padding: 10px 16px; border-radius: var(--radius); margin-top: 8px; font-size: 13px; box-shadow: var(--shadow); animation: slideIn .3s ease; }
   .toast-item.err { border-left-color: var(--red); }
   @keyframes slideIn { from { transform: translateX(40px); opacity: 0; } to { transform: none; opacity: 1; } }
-
-  /* SEPARADOR */
   .divider { height: 1px; background: var(--border); margin: 20px 0; }
-
-  /* SPINNER */
   .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .6s linear infinite; margin-right: 6px; vertical-align: middle; }
   @keyframes spin { to { transform: rotate(360deg); } }
 </style>
 </head>
 <body>
-
 <div id="app">
-  <!-- TOPBAR -->
   <div class="topbar">
     <div class="topbar-logo">⬡ CENTRAL DE CONCRETO</div>
     <div class="topbar-title">PCH Lebon Regis</div>
   </div>
-
-  <!-- NAV -->
   <div class="nav-tabs">
     <button class="nav-tab active" onclick="showPage('dashboard')">Dashboard</button>
     <button class="nav-tab" onclick="showPage('tracos')">Traços / Dosagens</button>
@@ -195,173 +112,125 @@
     <button class="nav-tab" onclick="showPage('estoque')">Estoque</button>
     <button class="nav-tab" onclick="showPage('relatorios')">Relatórios</button>
   </div>
-
-  <!-- MAIN -->
   <div class="main">
 
-    <!-- ── DASHBOARD ── -->
-    <div class="page active" id="page-dashboard">
-      <div class="section-header">
-        <div class="section-title">Dashboard <span>Geral</span></div>
-        <button class="btn btn-secondary" onclick="loadDashboard()">↻ Atualizar</button>
-      </div>
-      <div class="grid-4" id="dash-stats">
-        <div class="stat-card"><div class="stat-label">Betonadas Hoje</div><div class="stat-value" id="d-betHoje">—</div></div>
-        <div class="stat-card"><div class="stat-label">Volume Hoje (m³)</div><div class="stat-value" id="d-volHoje">—</div></div>
-        <div class="stat-card"><div class="stat-label">Traços Cadastrados</div><div class="stat-value" id="d-tracos">—</div></div>
-        <div class="stat-card"><div class="stat-label">Alertas Estoque</div><div class="stat-value" id="d-alertas" style="color:var(--red)">—</div></div>
-      </div>
-      <div class="divider"></div>
-      <div class="grid-2">
-        <div class="card">
-          <div class="card-title">Estoque Atual</div>
-          <div id="dash-estoque-list"><div class="empty"><div class="spinner"></div> Carregando...</div></div>
-        </div>
-        <div class="card">
-          <div class="card-title">Últimas Betonadas</div>
-          <div id="dash-bet-list"><div class="empty"><div class="spinner"></div> Carregando...</div></div>
-        </div>
+```
+<!-- DASHBOARD -->
+<div class="page active" id="page-dashboard">
+  <div class="section-header">
+    <div class="section-title">Dashboard <span>Geral</span></div>
+    <button class="btn btn-secondary" onclick="loadDashboard()">↻ Atualizar</button>
+  </div>
+  <div class="grid-4">
+    <div class="stat-card"><div class="stat-label">Betonadas Hoje</div><div class="stat-value" id="d-betHoje">—</div></div>
+    <div class="stat-card"><div class="stat-label">Volume Hoje (m³)</div><div class="stat-value" id="d-volHoje">—</div></div>
+    <div class="stat-card"><div class="stat-label">Traços Cadastrados</div><div class="stat-value" id="d-tracos">—</div></div>
+    <div class="stat-card"><div class="stat-label">Alertas Estoque</div><div class="stat-value" id="d-alertas" style="color:var(--red)">—</div></div>
+  </div>
+  <div class="divider"></div>
+  <div class="grid-2">
+    <div class="card"><div class="card-title">Estoque Atual</div><div id="dash-estoque-list"><div class="empty"><span class="spinner"></span> Carregando...</div></div></div>
+    <div class="card"><div class="card-title">Últimas Betonadas</div><div id="dash-bet-list"><div class="empty"><span class="spinner"></span> Carregando...</div></div></div>
+  </div>
+</div>
+
+<!-- TRAÇOS -->
+<div class="page" id="page-tracos">
+  <div class="section-header">
+    <div class="section-title">Traços / <span>Dosagens</span></div>
+    <button class="btn btn-primary" id="btn-novo-traco">+ Novo Traço</button>
+  </div>
+  <div class="card">
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Código</th><th>Fck (MPa)</th><th>Cimento (kg/m³)</th><th>Areia (kg/m³)</th><th>Brita (kg/m³)</th><th>Água (L/m³)</th><th>Aditivo (kg/m³)</th><th>Slump (cm)</th><th>Ações</th></tr></thead>
+        <tbody id="tracos-tbody"><tr><td colspan="9" class="empty">Carregando...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- BETONADAS -->
+<div class="page" id="page-betonadas">
+  <div class="section-header">
+    <div class="section-title">Controle de <span>Betonadas</span></div>
+    <button class="btn btn-primary" id="btn-nova-betonada">+ Registrar Betonada</button>
+  </div>
+  <div class="card" style="padding:14px 16px; margin-bottom:12px;">
+    <div class="inline-row">
+      <div class="form-group" style="max-width:150px"><label>Data Início</label><input type="date" id="f-bet-ini"></div>
+      <div class="form-group" style="max-width:150px"><label>Data Fim</label><input type="date" id="f-bet-fim"></div>
+      <div class="form-group" style="max-width:180px"><label>Traço</label><select id="f-bet-traco"><option value="">Todos</option></select></div>
+      <div style="display:flex;gap:8px;align-items:flex-end;">
+        <button class="btn btn-secondary" onclick="loadBetonadas()">Filtrar</button>
+        <button class="btn btn-secondary" onclick="clearFiltrosBetonadas()">Limpar</button>
       </div>
     </div>
-
-    <!-- ── TRAÇOS ── -->
-    <div class="page" id="page-tracos">
-      <div class="section-header">
-        <div class="section-title">Traços / <span>Dosagens</span></div>
-        <button class="btn btn-primary" id="btn-novo-traco">+ Novo Traço</button>
-      </div>
-      <div id="tracos-alerts"></div>
-      <div class="card">
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Código</th>
-                <th>Fck (MPa)</th>
-                <th>Cimento (kg/m³)</th>
-                <th>Areia (kg/m³)</th>
-                <th>Brita (kg/m³)</th>
-                <th>Água (L/m³)</th>
-                <th>Aditivo (kg/m³)</th>
-                <th>Slump (cm)</th>
-                <th>Ações</th>
-              </tr>
-            </thead>
-            <tbody id="tracos-tbody">
-              <tr><td colspan="9" class="empty">Carregando...</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
+  </div>
+  <div class="card">
+    <div id="bet-totais" style="margin-bottom:12px;"></div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Data/Hora</th><th>Traço</th><th>Volume (m³)</th><th>Local/Elem.</th><th>Operador</th><th>CP?</th><th>Obs</th><th>Ações</th></tr></thead>
+        <tbody id="betonadas-tbody"><tr><td colspan="8" class="empty">Carregando...</td></tr></tbody>
+      </table>
     </div>
+  </div>
+</div>
 
-    <!-- ── BETONADAS ── -->
-    <div class="page" id="page-betonadas">
-      <div class="section-header">
-        <div class="section-title">Controle de <span>Betonadas</span></div>
-        <button class="btn btn-primary" id="btn-nova-betonada">+ Registrar Betonada</button>
-      </div>
-
-      <!-- FILTROS -->
-      <div class="card" style="padding:14px 16px; margin-bottom:12px;">
-        <div class="inline-row">
-          <div class="form-group" style="max-width:150px"><label>Data Início</label><input type="date" id="f-bet-ini"></div>
-          <div class="form-group" style="max-width:150px"><label>Data Fim</label><input type="date" id="f-bet-fim"></div>
-          <div class="form-group" style="max-width:180px"><label>Traço</label>
-            <select id="f-bet-traco"><option value="">Todos</option></select>
-          </div>
-          <div style="display:flex; gap:8px; align-items:flex-end; padding-bottom:0;">
-            <button class="btn btn-secondary" onclick="loadBetonadas()">Filtrar</button>
-            <button class="btn btn-secondary" onclick="clearFiltrosBetonadas()">Limpar</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div id="bet-totais" style="margin-bottom:12px;"></div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Data/Hora</th>
-                <th>Traço</th>
-                <th>Volume (m³)</th>
-                <th>Local/Elem.</th>
-                <th>Operador</th>
-                <th>CP?</th>
-                <th>Obs</th>
-                <th>Ações</th>
-              </tr>
-            </thead>
-            <tbody id="betonadas-tbody">
-              <tr><td colspan="8" class="empty">Carregando...</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
+<!-- ESTOQUE -->
+<div class="page" id="page-estoque">
+  <div class="section-header">
+    <div class="section-title">Estoque de <span>Materiais</span></div>
+    <button class="btn btn-primary" id="btn-nova-mov">+ Movimentação</button>
+  </div>
+  <div id="estoque-alerts"></div>
+  <div class="grid-3" id="estoque-cards"><div class="stat-card"><span class="spinner"></span> Carregando...</div></div>
+  <div class="divider"></div>
+  <div class="card">
+    <div class="card-title">Histórico de Movimentações</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Data</th><th>Material</th><th>Tipo</th><th>Qtd (kg/L)</th><th>Nota/Ref.</th><th>Responsável</th><th>Obs</th></tr></thead>
+        <tbody id="movimentacoes-tbody"><tr><td colspan="7" class="empty">Carregando...</td></tr></tbody>
+      </table>
     </div>
+  </div>
+</div>
 
-    <!-- ── ESTOQUE ── -->
-    <div class="page" id="page-estoque">
-      <div class="section-header">
-        <div class="section-title">Estoque de <span>Materiais</span></div>
-        <button class="btn btn-primary" id="btn-nova-mov">+ Movimentação</button>
+<!-- RELATÓRIOS -->
+<div class="page" id="page-relatorios">
+  <div class="section-header"><div class="section-title">Relatórios e <span>Histórico</span></div></div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">Consumo por Traço</div>
+      <div class="inline-row" style="margin-bottom:16px;">
+        <div class="form-group"><label>Período Início</label><input type="date" id="r-ini"></div>
+        <div class="form-group"><label>Período Fim</label><input type="date" id="r-fim"></div>
+        <div style="display:flex;align-items:flex-end;"><button class="btn btn-secondary" onclick="gerarRelatorio()">Gerar</button></div>
       </div>
-      <div id="estoque-alerts"></div>
-      <div class="grid-3" id="estoque-cards">
-        <div class="stat-card"><div class="spinner"></div> Carregando...</div>
-      </div>
-      <div class="divider"></div>
-      <div class="card">
-        <div class="card-title">Histórico de Movimentações</div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr><th>Data</th><th>Material</th><th>Tipo</th><th>Qtd (kg/L)</th><th>Nota/Ref.</th><th>Responsável</th><th>Obs</th></tr>
-            </thead>
-            <tbody id="movimentacoes-tbody">
-              <tr><td colspan="7" class="empty">Carregando...</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <div id="rel-por-traco"></div>
     </div>
-
-    <!-- ── RELATÓRIOS ── -->
-    <div class="page" id="page-relatorios">
-      <div class="section-header">
-        <div class="section-title">Relatórios e <span>Histórico</span></div>
-      </div>
-      <div class="grid-2">
-        <div class="card">
-          <div class="card-title">Consumo por Traço</div>
-          <div class="inline-row" style="margin-bottom:16px;">
-            <div class="form-group"><label>Período Início</label><input type="date" id="r-ini"></div>
-            <div class="form-group"><label>Período Fim</label><input type="date" id="r-fim"></div>
-            <div style="display:flex;align-items:flex-end;"><button class="btn btn-secondary" onclick="gerarRelatorio()">Gerar</button></div>
-          </div>
-          <div id="rel-por-traco"></div>
-        </div>
-        <div class="card">
-          <div class="card-title">Consumo de Materiais (Período)</div>
-          <div id="rel-consumo-mat"></div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-title">Exportar Dados</div>
-        <div style="display:flex;gap:12px;flex-wrap:wrap;">
-          <button class="btn btn-secondary" onclick="exportarBetonadas()">⬇ Betonadas CSV</button>
-          <button class="btn btn-secondary" onclick="exportarMovimentacoes()">⬇ Movimentações CSV</button>
-        </div>
-      </div>
+    <div class="card">
+      <div class="card-title">Consumo de Materiais (Período)</div>
+      <div id="rel-consumo-mat"></div>
     </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Exportar Dados</div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;">
+      <button class="btn btn-secondary" onclick="exportarBetonadas()">⬇ Betonadas CSV</button>
+      <button class="btn btn-secondary" onclick="exportarMovimentacoes()">⬇ Movimentações CSV</button>
+    </div>
+  </div>
+</div>
+```
 
-  </div><!-- /main -->
-</div><!-- /app -->
-
-<!-- ════════ MODAIS ════════ -->
+  </div>
+</div>
 
 <!-- MODAL TRAÇO -->
+
 <div class="modal-overlay" id="modal-traco">
   <div class="modal">
     <div class="modal-title" id="modal-traco-title">Novo Traço</div>
@@ -382,14 +251,10 @@
     </div>
     <div class="form-group">
       <label>Tipo de Brita</label>
-      <select id="t-tipo-brita">
-        <option value="brita1">Brita 1</option>
-        <option value="brita0">Brita 0</option>
-      </select>
+      <select id="t-tipo-brita"><option value="brita1">Brita 1</option><option value="brita0">Brita 0</option></select>
     </div>
     <div class="form-group"><label>Tipo de Cimento</label><input id="t-tipo-cimento" placeholder="CP II-Z-32"></div>
     <div class="form-group"><label>Observações</label><textarea id="t-obs"></textarea></div>
-    <!-- PREVIEW -->
     <div id="traco-preview" style="display:none;">
       <div class="divider"></div>
       <div style="font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--text-dim);margin-bottom:6px;">Traço Unitário (1 : A : B)</div>
@@ -403,6 +268,7 @@
 </div>
 
 <!-- MODAL BETONADA -->
+
 <div class="modal-overlay" id="modal-betonada">
   <div class="modal">
     <div class="modal-title">Registrar Betonada</div>
@@ -411,28 +277,21 @@
       <div class="form-group"><label>Hora *</label><input type="time" id="b-hora"></div>
     </div>
     <div class="grid-2">
-      <div class="form-group"><label>Traço *</label>
-        <select id="b-traco" onchange="calcularConsumo()"><option value="">Selecione...</option></select>
-      </div>
+      <div class="form-group"><label>Traço *</label><select id="b-traco" onchange="calcularConsumo()"><option value="">Selecione...</option></select></div>
       <div class="form-group"><label>Volume (m³) *</label><input type="number" id="b-volume" step="0.1" placeholder="1.0" oninput="calcularConsumo()"></div>
     </div>
     <div class="form-group"><label>Local / Elemento Estrutural</label><input id="b-local" placeholder="ex: Pilar P5, Laje L3..."></div>
     <div class="grid-2">
       <div class="form-group"><label>Operador</label><input id="b-operador" placeholder="Nome do operador"></div>
-      <div class="form-group"><label>Coletou CP?</label>
-        <select id="b-cp"><option value="nao">Não</option><option value="sim">Sim</option></select>
-      </div>
+      <div class="form-group"><label>Coletou CP?</label><select id="b-cp"><option value="nao">Não</option><option value="sim">Sim</option></select></div>
     </div>
     <div class="form-group"><label>Nº do CP / Identificação</label><input id="b-cp-id" placeholder="ex: CP-001/2025"></div>
-
-    <!-- CONSUMO CALCULADO -->
     <div id="bet-consumo-preview" style="display:none;">
       <div class="divider"></div>
       <div style="font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--text-dim);margin-bottom:8px;">Consumo a descontar do estoque</div>
       <div class="grid-3" id="bet-consumo-vals"></div>
       <div id="bet-estoque-warn" style="margin-top:8px;"></div>
     </div>
-
     <div class="form-group"><label>Observações</label><textarea id="b-obs"></textarea></div>
     <div class="modal-footer">
       <button class="btn btn-secondary" onclick="closeModal('modal-betonada')">Cancelar</button>
@@ -441,7 +300,8 @@
   </div>
 </div>
 
-<!-- MODAL MOVIMENTAÇÃO ESTOQUE -->
+<!-- MODAL MOVIMENTAÇÃO -->
+
 <div class="modal-overlay" id="modal-movimentacao">
   <div class="modal">
     <div class="modal-title">Movimentação de Estoque</div>
@@ -480,10 +340,8 @@
   </div>
 </div>
 
-<!-- TOAST -->
 <div id="toast"></div>
 
-<!-- ════════ FIREBASE + SCRIPT ════════ -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
@@ -491,32 +349,26 @@ import {
   setDoc, getDocs, query, orderBy, where, limit, Timestamp, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-// ══ CONFIGURAÇÃO FIREBASE ══════════════════════
-// ⚠️ SUBSTITUA PELAS SUAS CREDENCIAIS ABAIXO
 const firebaseConfig = {
-  apiKey: "SUA_API_KEY",
-  authDomain: "SEU_PROJECT.firebaseapp.com",
-  projectId: "SEU_PROJECT_ID",
-  storageBucket: "SEU_PROJECT.appspot.com",
-  messagingSenderId: "SEU_SENDER_ID",
-  appId: "SEU_APP_ID"
+  apiKey: "AIzaSyBXvNvGqnewjD_J4pXmYbQngiwKPhzsh8k",
+  authDomain: "central-de-concreto.firebaseapp.com",
+  projectId: "central-de-concreto",
+  storageBucket: "central-de-concreto.firebasestorage.app",
+  messagingSenderId: "82382688907",
+  appId: "1:82382688907:web:43dea0e690edf7013dfa8e"
 };
-// ════════════════════════════════════════════════
 
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+const db  = getFirestore(app);
 
-// ── COLEÇÕES
 const COL_TRACOS    = "cc_tracos";
 const COL_BETONADAS = "cc_betonadas";
 const COL_MOVS      = "cc_movimentacoes";
 const COL_ESTOQUE   = "cc_estoque";
 
-// ── ESTADO LOCAL
 let tracosCache  = [];
 let estoqueCache = {};
 
-// ── MATERIAIS
 const MATERIAIS = [
   {id:"cimento", label:"Cimento", unit:"kg", min:5000},
   {id:"areia",   label:"Areia",  unit:"kg", min:8000},
@@ -535,33 +387,23 @@ window.showToast = function(msg, err=false) {
   d.appendChild(el);
   setTimeout(() => el.remove(), 3500);
 };
-
 function fmt(n, dec=1) { return (parseFloat(n)||0).toFixed(dec); }
-function fmtDate(ts) {
-  if (!ts) return "—";
-  const d = ts.toDate ? ts.toDate() : new Date(ts);
-  return d.toLocaleDateString("pt-BR") + " " + d.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
-}
-function today() { return new Date().toISOString().split("T")[0]; }
-function nowTime() {
-  const d = new Date();
-  return d.toTimeString().slice(0,5);
-}
+function today()   { return new Date().toISOString().split("T")[0]; }
+function nowTime() { return new Date().toTimeString().slice(0,5); }
 
 // ── MODAIS
-window.openModal  = function(id) { document.getElementById(id).classList.add("open"); }
-window.closeModal = function(id) { document.getElementById(id).classList.remove("open"); }
+window.openModal  = id => document.getElementById(id).classList.add("open");
+window.closeModal = id => document.getElementById(id).classList.remove("open");
 document.querySelectorAll(".modal-overlay").forEach(m => {
   m.addEventListener("click", e => { if(e.target === m) m.classList.remove("open"); });
 });
 
-// ── BOTÕES que abriam modais via onclick inline — agora usam addEventListener
+// ── BOTÕES
 document.getElementById("btn-novo-traco").addEventListener("click", () => {
   document.getElementById("modal-traco-title").textContent = "Novo Traço";
   document.getElementById("traco-id").value = "";
-  ["t-codigo","t-fck","t-cimento","t-areia","t-brita","t-agua","t-aditivo","t-slump","t-tipo-cimento","t-obs"].forEach(id => {
-    document.getElementById(id).value = "";
-  });
+  ["t-codigo","t-fck","t-cimento","t-areia","t-brita","t-agua","t-aditivo","t-slump","t-tipo-cimento","t-obs"]
+    .forEach(id => { document.getElementById(id).value = ""; });
   document.getElementById("t-tipo-brita").value = "brita1";
   document.getElementById("traco-preview").style.display = "none";
   openModal("modal-traco");
@@ -590,12 +432,17 @@ document.getElementById("btn-nova-mov").addEventListener("click", () => {
   openModal("modal-movimentacao");
 });
 
-// ── INIT — declarada UMA única vez
+// ── INIT
 async function initApp() {
-  await loadEstoqueCache();
-  await loadTracosCache();
-  preencherSelectTracos();
-  loadDashboard();
+  try {
+    await loadEstoqueCache();
+    await loadTracosCache();
+    preencherSelectTracos();
+    loadDashboard();
+  } catch(e) {
+    showToast("Erro ao conectar com Firebase: " + e.message, true);
+    console.error(e);
+  }
 }
 
 // ── PÁGINAS
@@ -604,25 +451,37 @@ window.showPage = function(id) {
   document.querySelectorAll(".nav-tab").forEach(t => t.classList.remove("active"));
   document.getElementById("page-"+id).classList.add("active");
   const tabs = document.querySelectorAll(".nav-tab");
-  const map = {dashboard:0, tracos:1, betonadas:2, estoque:3, relatorios:4};
+  const map  = {dashboard:0, tracos:1, betonadas:2, estoque:3, relatorios:4};
   if(map[id] !== undefined) tabs[map[id]].classList.add("active");
-  if(id === "dashboard")  loadDashboard();
-  if(id === "tracos")     loadTracos();
-  if(id === "betonadas")  loadBetonadas();
-  if(id === "estoque")    loadEstoque();
+  if(id === "dashboard") loadDashboard();
+  if(id === "tracos")    loadTracos();
+  if(id === "betonadas") loadBetonadas();
+  if(id === "estoque")   loadEstoque();
 };
 
 // ── ESTOQUE CACHE
 async function loadEstoqueCache() {
   const snap = await getDocs(collection(db, COL_ESTOQUE));
   estoqueCache = {};
-  snap.forEach(d => { estoqueCache[d.id] = d.data().saldo || 0; });
+  snap.forEach(d => {
+    const data = d.data();
+    estoqueCache[d.id] = parseFloat(data.saldo) || 0;
+    console.log("Cache estoque: " + d.id + " = " + estoqueCache[d.id]);
+  });
+  console.log("Total docs estoque:", snap.size);
 }
 
 async function setEstoque(mat, saldo) {
-  const ref = doc(db, COL_ESTOQUE, mat);
-  await setDoc(ref, { saldo, updatedAt: serverTimestamp() });
-  estoqueCache[mat] = saldo;
+  try {
+    const ref = doc(db, COL_ESTOQUE, mat);
+    await setDoc(ref, { saldo: saldo, mat: mat, updatedAt: serverTimestamp() }, { merge: true });
+    estoqueCache[mat] = saldo;
+    console.log("Estoque OK: " + mat + " = " + saldo);
+  } catch(e) {
+    console.error("Erro estoque (" + mat + "):", e);
+    showToast("Erro ao salvar estoque de " + mat + ": " + e.message, true);
+    throw e;
+  }
 }
 
 // ── TRAÇOS CACHE
@@ -638,68 +497,59 @@ function preencherSelectTracos() {
     if(!sel) return;
     const cur = sel.value;
     while(sel.options.length > 1) sel.remove(1);
-    tracosCache.forEach(t => {
-      const opt = new Option(`${t.codigo} — fck ${t.fck} MPa`, t.id);
-      sel.add(opt);
-    });
+    tracosCache.forEach(t => sel.add(new Option(`${t.codigo} — fck ${t.fck} MPa`, t.id)));
     sel.value = cur;
   });
 }
 
 // ── DASHBOARD
 window.loadDashboard = async function() {
-  const hoje   = new Date(); hoje.setHours(0,0,0,0);
-  const hojeFim = new Date(); hojeFim.setHours(23,59,59,999);
-  const snapBet = await getDocs(
-    query(collection(db, COL_BETONADAS),
-      where("createdAt",">=", Timestamp.fromDate(hoje)),
-      where("createdAt","<=", Timestamp.fromDate(hojeFim))
-    )
-  );
-  let betHoje = 0, volHoje = 0;
-  snapBet.forEach(d => { betHoje++; volHoje += parseFloat(d.data().volume)||0; });
+  try {
+    const hoje    = new Date(); hoje.setHours(0,0,0,0);
+    const hojeFim = new Date(); hojeFim.setHours(23,59,59,999);
+    const snapBet = await getDocs(query(collection(db, COL_BETONADAS),
+      where("createdAt",">=",Timestamp.fromDate(hoje)),
+      where("createdAt","<=",Timestamp.fromDate(hojeFim))
+    ));
+    let betHoje=0, volHoje=0;
+    snapBet.forEach(d => { betHoje++; volHoje += parseFloat(d.data().volume)||0; });
+    document.getElementById("d-betHoje").textContent = betHoje;
+    document.getElementById("d-volHoje").textContent = fmt(volHoje);
+    document.getElementById("d-tracos").textContent  = tracosCache.length;
+    let alertas = 0;
+    MATERIAIS.forEach(m => { if((estoqueCache[m.id]||0) < m.min) alertas++; });
+    document.getElementById("d-alertas").textContent = alertas;
 
-  document.getElementById("d-betHoje").textContent = betHoje;
-  document.getElementById("d-volHoje").textContent = fmt(volHoje);
-  document.getElementById("d-tracos").textContent  = tracosCache.length;
-
-  let alertas = 0;
-  MATERIAIS.forEach(m => { if((estoqueCache[m.id]||0) < m.min) alertas++; });
-  document.getElementById("d-alertas").textContent = alertas;
-
-  // estoque cards no dashboard
-  const estoqueDiv = document.getElementById("dash-estoque-list");
-  estoqueDiv.innerHTML = "";
-  MATERIAIS.forEach(m => {
-    const saldo = estoqueCache[m.id] || 0;
-    const pct   = Math.min(100, (saldo / (m.min*3)) * 100);
-    const cor   = saldo < m.min ? "var(--red)" : saldo < m.min*1.5 ? "var(--accent)" : "var(--green)";
-    estoqueDiv.innerHTML += `
-      <div style="margin-bottom:12px;">
+    const estoqueDiv = document.getElementById("dash-estoque-list");
+    estoqueDiv.innerHTML = "";
+    MATERIAIS.forEach(m => {
+      const saldo = estoqueCache[m.id]||0;
+      const pct   = Math.min(100,(saldo/(m.min*3))*100);
+      const cor   = saldo < m.min ? "var(--red)" : saldo < m.min*1.5 ? "var(--accent)" : "var(--green)";
+      estoqueDiv.innerHTML += `<div style="margin-bottom:12px;">
         <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
-          <span>${m.label}</span>
-          <span style="font-weight:600;color:${cor}">${fmt(saldo,0)} ${m.unit}</span>
+          <span>${m.label}</span><span style="font-weight:600;color:${cor}">${fmt(saldo,0)} ${m.unit}</span>
         </div>
         <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:${cor}"></div></div>
       </div>`;
-  });
+    });
 
-  // últimas betonadas
-  const snapB2 = await getDocs(query(collection(db, COL_BETONADAS), orderBy("createdAt","desc"), limit(6)));
-  const betDiv = document.getElementById("dash-bet-list");
-  betDiv.innerHTML = "";
-  let cnt = 0;
-  snapB2.forEach(d => {
-    cnt++;
-    const b  = d.data();
-    const tr = tracosCache.find(t => t.id === b.tracoid);
-    betDiv.innerHTML += `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);">
-      <span>${b.data ? b.data.split("-").reverse().join("/") : "—"} ${b.hora||""}</span>
-      <span style="color:var(--text-dim)">${tr ? tr.codigo : "—"}</span>
-      <span style="color:var(--accent);font-weight:600">${fmt(b.volume)} m³</span>
-    </div>`;
-  });
-  if(!cnt) betDiv.innerHTML = '<div class="empty">Nenhuma betonada registrada.</div>';
+    const snapB2 = await getDocs(query(collection(db, COL_BETONADAS), orderBy("createdAt","desc"), limit(6)));
+    const betDiv = document.getElementById("dash-bet-list");
+    betDiv.innerHTML = "";
+    let cnt=0;
+    snapB2.forEach(d => {
+      cnt++;
+      const b  = d.data();
+      const tr = tracosCache.find(t => t.id === b.tracoid);
+      betDiv.innerHTML += `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);">
+        <span>${b.data ? b.data.split("-").reverse().join("/") : "—"} ${b.hora||""}</span>
+        <span style="color:var(--text-dim)">${tr ? tr.codigo : "—"}</span>
+        <span style="color:var(--accent);font-weight:600">${fmt(b.volume)} m³</span>
+      </div>`;
+    });
+    if(!cnt) betDiv.innerHTML = '<div class="empty">Nenhuma betonada registrada.</div>';
+  } catch(e) { showToast("Erro ao carregar dashboard: "+e.message, true); }
 };
 
 // ── TRAÇOS
@@ -714,14 +564,9 @@ window.loadTracos = async function() {
   }
   tracosCache.forEach(t => {
     tbody.innerHTML += `<tr>
-      <td><strong>${t.codigo}</strong></td>
-      <td>${t.fck}</td>
-      <td>${fmt(t.cimento,0)}</td>
-      <td>${fmt(t.areia,0)}</td>
-      <td>${fmt(t.brita,0)}</td>
-      <td>${fmt(t.agua,0)}</td>
-      <td>${fmt(t.aditivo,2)}</td>
-      <td>${t.slump || "—"}</td>
+      <td><strong>${t.codigo}</strong></td><td>${t.fck}</td>
+      <td>${fmt(t.cimento,0)}</td><td>${fmt(t.areia,0)}</td><td>${fmt(t.brita,0)}</td>
+      <td>${fmt(t.agua,0)}</td><td>${fmt(t.aditivo,2)}</td><td>${t.slump||"—"}</td>
       <td style="white-space:nowrap;">
         <button class="btn btn-secondary btn-sm" onclick="editarTraco('${t.id}')">✏️</button>
         <button class="btn btn-danger btn-sm" onclick="excluirTraco('${t.id}')">🗑</button>
@@ -730,7 +575,6 @@ window.loadTracos = async function() {
   });
 };
 
-// Preview traço unitário
 function calcPreviewTraco() {
   const cim = parseFloat(document.getElementById("t-cimento").value)||0;
   const are = parseFloat(document.getElementById("t-areia").value)||0;
@@ -739,10 +583,8 @@ function calcPreviewTraco() {
   if(!cim) { document.getElementById("traco-preview").style.display="none"; return; }
   document.getElementById("traco-preview").style.display="block";
   const r = v => (v/cim).toFixed(3);
-  document.getElementById("traco-preview-vals").innerHTML = `
-    <div style="font-family:var(--font-head);font-size:22px;font-weight:800;color:var(--accent);">
-      1 : ${r(are)} : ${r(bri)} — a/c = ${r(agu)}
-    </div>`;
+  document.getElementById("traco-preview-vals").innerHTML =
+    `<div style="font-family:var(--font-head);font-size:22px;font-weight:800;color:var(--accent);">1 : ${r(are)} : ${r(bri)} — a/c = ${r(agu)}</div>`;
 }
 ["t-cimento","t-areia","t-brita","t-agua"].forEach(id => {
   document.getElementById(id).addEventListener("input", calcPreviewTraco);
@@ -751,29 +593,23 @@ function calcPreviewTraco() {
 window.salvarTraco = async function() {
   const id = document.getElementById("traco-id").value;
   const data = {
-    codigo:     document.getElementById("t-codigo").value.trim().toUpperCase(),
-    fck:        parseFloat(document.getElementById("t-fck").value)||0,
-    cimento:    parseFloat(document.getElementById("t-cimento").value)||0,
-    areia:      parseFloat(document.getElementById("t-areia").value)||0,
-    brita:      parseFloat(document.getElementById("t-brita").value)||0,
-    agua:       parseFloat(document.getElementById("t-agua").value)||0,
-    aditivo:    parseFloat(document.getElementById("t-aditivo").value)||0,
-    slump:      parseFloat(document.getElementById("t-slump").value)||0,
-    tipoBrita:  document.getElementById("t-tipo-brita").value,
-    tipoCimento:document.getElementById("t-tipo-cimento").value.trim(),
-    obs:        document.getElementById("t-obs").value.trim(),
-    updatedAt:  serverTimestamp(),
+    codigo:      document.getElementById("t-codigo").value.trim().toUpperCase(),
+    fck:         parseFloat(document.getElementById("t-fck").value)||0,
+    cimento:     parseFloat(document.getElementById("t-cimento").value)||0,
+    areia:       parseFloat(document.getElementById("t-areia").value)||0,
+    brita:       parseFloat(document.getElementById("t-brita").value)||0,
+    agua:        parseFloat(document.getElementById("t-agua").value)||0,
+    aditivo:     parseFloat(document.getElementById("t-aditivo").value)||0,
+    slump:       parseFloat(document.getElementById("t-slump").value)||0,
+    tipoBrita:   document.getElementById("t-tipo-brita").value,
+    tipoCimento: document.getElementById("t-tipo-cimento").value.trim(),
+    obs:         document.getElementById("t-obs").value.trim(),
+    updatedAt:   serverTimestamp(),
   };
   if(!data.codigo || !data.fck || !data.cimento) { showToast("Preencha os campos obrigatórios!", true); return; }
   try {
-    if(id) {
-      await updateDoc(doc(db, COL_TRACOS, id), data);
-      showToast("Traço atualizado!");
-    } else {
-      data.createdAt = serverTimestamp();
-      await addDoc(collection(db, COL_TRACOS), data);
-      showToast("Traço cadastrado!");
-    }
+    if(id) { await updateDoc(doc(db,COL_TRACOS,id), data); showToast("Traço atualizado!"); }
+    else   { data.createdAt = serverTimestamp(); await addDoc(collection(db,COL_TRACOS), data); showToast("Traço cadastrado!"); }
     closeModal("modal-traco");
     loadTracos();
   } catch(e) { showToast("Erro: "+e.message, true); }
@@ -782,26 +618,26 @@ window.salvarTraco = async function() {
 window.editarTraco = function(id) {
   const t = tracosCache.find(x => x.id === id);
   if(!t) return;
-  document.getElementById("modal-traco-title").textContent  = "Editar Traço";
-  document.getElementById("traco-id").value                 = id;
-  document.getElementById("t-codigo").value                 = t.codigo;
-  document.getElementById("t-fck").value                    = t.fck;
-  document.getElementById("t-cimento").value                = t.cimento;
-  document.getElementById("t-areia").value                  = t.areia;
-  document.getElementById("t-brita").value                  = t.brita;
-  document.getElementById("t-agua").value                   = t.agua;
-  document.getElementById("t-aditivo").value                = t.aditivo||0;
-  document.getElementById("t-slump").value                  = t.slump||0;
-  document.getElementById("t-tipo-brita").value             = t.tipoBrita||"brita1";
-  document.getElementById("t-tipo-cimento").value           = t.tipoCimento||"";
-  document.getElementById("t-obs").value                    = t.obs||"";
+  document.getElementById("modal-traco-title").textContent = "Editar Traço";
+  document.getElementById("traco-id").value       = id;
+  document.getElementById("t-codigo").value       = t.codigo;
+  document.getElementById("t-fck").value          = t.fck;
+  document.getElementById("t-cimento").value      = t.cimento;
+  document.getElementById("t-areia").value        = t.areia;
+  document.getElementById("t-brita").value        = t.brita;
+  document.getElementById("t-agua").value         = t.agua;
+  document.getElementById("t-aditivo").value      = t.aditivo||0;
+  document.getElementById("t-slump").value        = t.slump||0;
+  document.getElementById("t-tipo-brita").value   = t.tipoBrita||"brita1";
+  document.getElementById("t-tipo-cimento").value = t.tipoCimento||"";
+  document.getElementById("t-obs").value          = t.obs||"";
   calcPreviewTraco();
   openModal("modal-traco");
 };
 
 window.excluirTraco = async function(id) {
   if(!confirm("Excluir este traço?")) return;
-  await deleteDoc(doc(db, COL_TRACOS, id));
+  await deleteDoc(doc(db,COL_TRACOS,id));
   showToast("Traço excluído!");
   loadTracos();
 };
@@ -811,40 +647,33 @@ window.loadBetonadas = async function() {
   const ini      = document.getElementById("f-bet-ini").value;
   const fim      = document.getElementById("f-bet-fim").value;
   const trFilter = document.getElementById("f-bet-traco").value;
-
-  const snap = await getDocs(query(collection(db, COL_BETONADAS), orderBy("data","desc")));
-  const tbody = document.getElementById("betonadas-tbody");
+  const snap     = await getDocs(query(collection(db,COL_BETONADAS), orderBy("data","desc")));
+  const tbody    = document.getElementById("betonadas-tbody");
   tbody.innerHTML = "";
-  let total = 0, count = 0;
-
+  let total=0, count=0;
   snap.forEach(d => {
-    const b = { id: d.id, ...d.data() };
-    const dt = b.data || "";
+    const b  = { id:d.id, ...d.data() };
+    const dt = b.data||"";
     if(ini && dt < ini) return;
     if(fim && dt > fim) return;
     if(trFilter && b.tracoid !== trFilter) return;
-    count++;
-    total += parseFloat(b.volume)||0;
+    count++; total += parseFloat(b.volume)||0;
     const tr = tracosCache.find(t => t.id === b.tracoid);
     tbody.innerHTML += `<tr>
       <td>${dt ? dt.split("-").reverse().join("/") : "—"} ${b.hora||""}</td>
       <td><strong>${tr ? tr.codigo : "—"}</strong></td>
       <td style="color:var(--accent);font-weight:600">${fmt(b.volume)} m³</td>
-      <td>${b.local||"—"}</td>
-      <td>${b.operador||"—"}</td>
-      <td>${b.cp==="sim" ? '<span class="badge badge-green">Sim</span>' : '<span class="badge badge-red">Não</span>'}</td>
+      <td>${b.local||"—"}</td><td>${b.operador||"—"}</td>
+      <td>${b.cp==="sim"?'<span class="badge badge-green">Sim</span>':'<span class="badge badge-red">Não</span>'}</td>
       <td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${b.obs||""}">${b.obs||"—"}</td>
       <td><button class="btn btn-danger btn-sm" onclick="excluirBetonada('${b.id}')">🗑</button></td>
     </tr>`;
   });
-
   document.getElementById("bet-totais").innerHTML = count
     ? `<div style="display:flex;gap:24px;font-family:var(--font-head);font-size:16px;">
         <span>Betonadas: <strong style="color:var(--accent)">${count}</strong></span>
         <span>Volume total: <strong style="color:var(--accent)">${fmt(total)} m³</strong></span>
-       </div>`
-    : "";
-
+       </div>` : "";
   if(!count) tbody.innerHTML = '<tr><td colspan="8" class="empty"><div class="empty-icon">🧱</div>Nenhuma betonada encontrada.</td></tr>';
 };
 
@@ -862,29 +691,22 @@ window.calcularConsumo = function() {
   if(!tracoid || !vol) { preview.style.display="none"; return; }
   const t = tracosCache.find(x => x.id === tracoid);
   if(!t) { preview.style.display="none"; return; }
-  preview.style.display="block";
-
-  // Usa o tipo de brita configurado no traço (campo tipoBrita), padrão brita1
-  const matBrita = t.tipoBrita || "brita1";
-
+  preview.style.display = "block";
+  const matBrita = t.tipoBrita||"brita1";
   const consumos = [
-    {mat:"cimento", label:"Cimento", val: t.cimento*vol},
-    {mat:"areia",   label:"Areia",   val: t.areia*vol},
-    {mat:matBrita,  label:"Brita",   val: t.brita*vol},
-    {mat:"agua",    label:"Água",    val: t.agua*vol},
+    {mat:"cimento",label:"Cimento",val:t.cimento*vol},
+    {mat:"areia",  label:"Areia",  val:t.areia*vol},
+    {mat:matBrita, label:"Brita",  val:t.brita*vol},
+    {mat:"agua",   label:"Água",   val:t.agua*vol},
   ];
-  if(t.aditivo) consumos.push({mat:"aditivo", label:"Aditivo", val: t.aditivo*vol});
-
-  const div = document.getElementById("bet-consumo-vals");
-  div.innerHTML = consumos.map(c => `
-    <div class="stat-card" style="padding:10px;">
+  if(t.aditivo) consumos.push({mat:"aditivo",label:"Aditivo",val:t.aditivo*vol});
+  document.getElementById("bet-consumo-vals").innerHTML = consumos.map(c =>
+    `<div class="stat-card" style="padding:10px;">
       <div class="stat-label">${c.label}</div>
       <div style="font-family:var(--font-head);font-size:20px;font-weight:700;color:var(--accent)">${fmt(c.val,0)} kg</div>
     </div>`).join("");
-
-  const warn   = document.getElementById("bet-estoque-warn");
   const baixos = consumos.filter(c => (estoqueCache[c.mat]||0) < c.val);
-  warn.innerHTML = baixos.length
+  document.getElementById("bet-estoque-warn").innerHTML = baixos.length
     ? baixos.map(c => `<div class="alert alert-danger">⚠️ Estoque insuficiente de <strong>${c.label}</strong>: disponível ${fmt(estoqueCache[c.mat]||0,0)} kg, necessário ${fmt(c.val,0)} kg</div>`).join("")
     : '<div class="alert alert-success">✅ Estoque suficiente para esta betonada.</div>';
 };
@@ -895,43 +717,32 @@ window.salvarBetonada = async function() {
   const data_   = document.getElementById("b-data").value;
   const hora    = document.getElementById("b-hora").value;
   if(!tracoid || !volume || !data_) { showToast("Preencha os campos obrigatórios!", true); return; }
-
-  const t = tracosCache.find(x => x.id === tracoid);
-  const matBrita = t ? (t.tipoBrita || "brita1") : "brita1";
-
-  const registro = {
-    tracoid, volume, data: data_, hora,
-    local:     document.getElementById("b-local").value.trim(),
-    operador:  document.getElementById("b-operador").value.trim(),
-    cp:        document.getElementById("b-cp").value,
-    cpId:      document.getElementById("b-cp-id").value.trim(),
-    obs:       document.getElementById("b-obs").value.trim(),
-    createdAt: serverTimestamp(),
-  };
-
+  const t        = tracosCache.find(x => x.id === tracoid);
+  const matBrita = t ? (t.tipoBrita||"brita1") : "brita1";
   try {
-    await addDoc(collection(db, COL_BETONADAS), registro);
-
-    // Descontar estoque usando o tipo de brita correto do traço
+    await addDoc(collection(db,COL_BETONADAS), {
+      tracoid, volume, data:data_, hora,
+      local:     document.getElementById("b-local").value.trim(),
+      operador:  document.getElementById("b-operador").value.trim(),
+      cp:        document.getElementById("b-cp").value,
+      cpId:      document.getElementById("b-cp-id").value.trim(),
+      obs:       document.getElementById("b-obs").value.trim(),
+      createdAt: serverTimestamp(),
+    });
     if(t) {
       const consumos = [
-        {mat:"cimento", val: t.cimento*volume},
-        {mat:"areia",   val: t.areia*volume},
-        {mat:matBrita,  val: t.brita*volume},
-        {mat:"agua",    val: t.agua*volume},
+        {mat:"cimento",val:t.cimento*volume},
+        {mat:"areia",  val:t.areia*volume},
+        {mat:matBrita, val:t.brita*volume},
+        {mat:"agua",   val:t.agua*volume},
       ];
-      if(t.aditivo) consumos.push({mat:"aditivo", val: t.aditivo*volume});
-
+      if(t.aditivo) consumos.push({mat:"aditivo",val:t.aditivo*volume});
       for(const c of consumos) {
         await setEstoque(c.mat, (estoqueCache[c.mat]||0) - c.val);
-        await addDoc(collection(db, COL_MOVS), {
-          material:  c.mat,
-          tipo:      "saida_auto",
-          qtd:       c.val,
-          data:      data_,
-          nota:      "Auto - betonada",
-          obs:       `Betonada ${t.codigo} ${volume}m³`,
-          createdAt: serverTimestamp(),
+        await addDoc(collection(db,COL_MOVS), {
+          material:c.mat, tipo:"saida_auto", qtd:c.val, data:data_,
+          nota:"Auto - betonada", obs:`Betonada ${t.codigo} ${volume}m³`,
+          createdAt:serverTimestamp(),
         });
       }
     }
@@ -943,8 +754,8 @@ window.salvarBetonada = async function() {
 };
 
 window.excluirBetonada = async function(id) {
-  if(!confirm("Excluir este registro?\n\nATENÇÃO: O estoque NÃO será revertido automaticamente. Faça um ajuste manual se necessário.")) return;
-  await deleteDoc(doc(db, COL_BETONADAS, id));
+  if(!confirm("Excluir este registro?\n\nATENÇÃO: O estoque NÃO será revertido automaticamente.")) return;
+  await deleteDoc(doc(db,COL_BETONADAS,id));
   showToast("Registro excluído.");
   loadBetonadas();
 };
@@ -952,22 +763,15 @@ window.excluirBetonada = async function(id) {
 // ── ESTOQUE
 window.loadEstoque = async function() {
   await loadEstoqueCache();
-  renderEstoqueCards();
-  loadMovimentacoes();
-};
-
-function renderEstoqueCards() {
   const div      = document.getElementById("estoque-cards");
   const alertDiv = document.getElementById("estoque-alerts");
-  div.innerHTML      = "";
-  alertDiv.innerHTML = "";
+  div.innerHTML = alertDiv.innerHTML = "";
   MATERIAIS.forEach(m => {
-    const saldo = estoqueCache[m.id] || 0;
-    const pct   = Math.min(100, (saldo / (m.min*3)) * 100);
+    const saldo = estoqueCache[m.id]||0;
+    const pct   = Math.min(100,(saldo/(m.min*3))*100);
     const cor   = saldo < m.min ? "var(--red)" : saldo < m.min*1.5 ? "var(--accent)" : "var(--green)";
-    if(saldo < m.min) {
+    if(saldo < m.min)
       alertDiv.innerHTML += `<div class="alert alert-danger">⚠️ Estoque baixo: <strong>${m.label}</strong> — ${fmt(saldo,0)} ${m.unit} (mínimo: ${m.min} ${m.unit})</div>`;
-    }
     div.innerHTML += `<div class="stat-card">
       <div class="stat-label">${m.label}</div>
       <div class="stat-value" style="color:${cor}">${fmt(saldo,0)}<span class="stat-unit">${m.unit}</span></div>
@@ -975,14 +779,11 @@ function renderEstoqueCards() {
       <div class="stat-sub">Mínimo: ${m.min} ${m.unit}</div>
     </div>`;
   });
-}
-
-async function loadMovimentacoes() {
-  // Usar limit() diretamente na query — mais eficiente
-  const snap = await getDocs(query(collection(db, COL_MOVS), orderBy("createdAt","desc"), limit(80)));
+  // Histórico
+  const snap  = await getDocs(query(collection(db,COL_MOVS), orderBy("createdAt","desc"), limit(80)));
   const tbody = document.getElementById("movimentacoes-tbody");
   tbody.innerHTML = "";
-  let cnt = 0;
+  let cnt=0;
   const tipos = {
     entrada:   '<span class="badge badge-green">Entrada</span>',
     saida:     '<span class="badge badge-red">Saída</span>',
@@ -996,17 +797,16 @@ async function loadMovimentacoes() {
     tbody.innerHTML += `<tr>
       <td>${m.data ? m.data.split("-").reverse().join("/") : "—"}</td>
       <td>${mat ? mat.label : m.material}</td>
-      <td>${tipos[m.tipo] || m.tipo}</td>
+      <td>${tipos[m.tipo]||m.tipo}</td>
       <td style="font-weight:600;color:${m.tipo==="entrada"?"var(--green)":"var(--red)"}">
-        ${m.tipo==="entrada"?"+":"-"}${fmt(m.qtd,0)}
-      </td>
+        ${m.tipo==="entrada"?"+":"-"}${fmt(m.qtd,0)}</td>
       <td>${m.nota||"—"}</td>
       <td>${m.responsavel||"—"}</td>
       <td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${m.obs||"—"}</td>
     </tr>`;
   });
   if(!cnt) tbody.innerHTML = '<tr><td colspan="7" class="empty">Nenhuma movimentação registrada.</td></tr>';
-}
+};
 
 window.salvarMovimentacao = async function() {
   const material = document.getElementById("m-material").value;
@@ -1014,29 +814,18 @@ window.salvarMovimentacao = async function() {
   const qtd      = parseFloat(document.getElementById("m-qtd").value)||0;
   const data_    = document.getElementById("m-data").value;
   if(!material || !qtd || !data_) { showToast("Preencha os campos obrigatórios!", true); return; }
-
   try {
-    await addDoc(collection(db, COL_MOVS), {
-      material,
-      tipo,
-      qtd,
-      data:        data_,
+    await addDoc(collection(db,COL_MOVS), {
+      material, tipo, qtd, data:data_,
       nota:        document.getElementById("m-nota").value.trim(),
       responsavel: document.getElementById("m-resp").value.trim(),
       obs:         document.getElementById("m-obs").value.trim(),
       createdAt:   serverTimestamp(),
     });
-
-    // Atualizar saldo conforme tipo de movimentação
-    const atual = estoqueCache[material] || 0;
-    if(tipo === "ajuste") {
-      await setEstoque(material, qtd);
-    } else if(tipo === "entrada") {
-      await setEstoque(material, atual + qtd);
-    } else {
-      await setEstoque(material, atual - qtd);
-    }
-
+    const atual = estoqueCache[material]||0;
+    if(tipo==="ajuste")       await setEstoque(material, qtd);
+    else if(tipo==="entrada") await setEstoque(material, atual+qtd);
+    else                      await setEstoque(material, atual-qtd);
     showToast("Movimentação registrada!");
     closeModal("modal-movimentacao");
     loadEstoque();
@@ -1047,105 +836,83 @@ window.salvarMovimentacao = async function() {
 window.gerarRelatorio = async function() {
   const ini = document.getElementById("r-ini").value;
   const fim = document.getElementById("r-fim").value;
-
-  const snap = await getDocs(query(collection(db, COL_BETONADAS), orderBy("data")));
-  const porTraco = {};
-  let totalVol   = 0;
-  const consumoMat = {};
-
+  const snap = await getDocs(query(collection(db,COL_BETONADAS), orderBy("data")));
+  const porTraco={};
+  let totalVol=0;
+  const consumoMat={};
   snap.forEach(d => {
     const b = d.data();
     if(ini && b.data < ini) return;
     if(fim && b.data > fim) return;
     const vol = parseFloat(b.volume)||0;
     totalVol += vol;
-    if(!porTraco[b.tracoid]) porTraco[b.tracoid] = { count:0, vol:0 };
+    if(!porTraco[b.tracoid]) porTraco[b.tracoid]={count:0,vol:0};
     porTraco[b.tracoid].count++;
     porTraco[b.tracoid].vol += vol;
     const t = tracosCache.find(x => x.id === b.tracoid);
     if(t) {
-      const matBrita = t.tipoBrita || "brita1";
-      [["cimento",t.cimento],["areia",t.areia],[matBrita,t.brita],["agua",t.agua]].forEach(([k,v]) => {
-        consumoMat[k] = (consumoMat[k]||0) + v*vol;
+      const mb = t.tipoBrita||"brita1";
+      [["cimento",t.cimento],["areia",t.areia],[mb,t.brita],["agua",t.agua]].forEach(([k,v]) => {
+        consumoMat[k] = (consumoMat[k]||0)+v*vol;
       });
-      if(t.aditivo) consumoMat["aditivo"] = (consumoMat["aditivo"]||0) + t.aditivo*vol;
+      if(t.aditivo) consumoMat["aditivo"] = (consumoMat["aditivo"]||0)+t.aditivo*vol;
     }
   });
-
   const div1 = document.getElementById("rel-por-traco");
-  if(!Object.keys(porTraco).length) {
-    div1.innerHTML = '<div class="empty">Nenhum dado no período.</div>';
-  } else {
-    div1.innerHTML =
-      `<table><thead><tr><th>Traço</th><th>Betonadas</th><th>Volume (m³)</th><th>% do total</th></tr></thead><tbody>` +
+  if(!Object.keys(porTraco).length) { div1.innerHTML='<div class="empty">Nenhum dado no período.</div>'; }
+  else {
+    div1.innerHTML = `<table><thead><tr><th>Traço</th><th>Betonadas</th><th>Volume (m³)</th><th>%</th></tr></thead><tbody>`+
       Object.entries(porTraco).map(([tid,v]) => {
-        const t = tracosCache.find(x => x.id === tid);
-        return `<tr>
-          <td><strong>${t ? t.codigo : "—"}</strong></td>
-          <td>${v.count}</td>
-          <td>${fmt(v.vol)}</td>
-          <td>${totalVol ? fmt(v.vol/totalVol*100)+"%" : "—"}</td>
-        </tr>`;
-      }).join("") +
-      `<tr style="font-weight:600;border-top:2px solid var(--border)">
-        <td>TOTAL</td>
-        <td>${Object.values(porTraco).reduce((a,b)=>a+b.count,0)}</td>
-        <td>${fmt(totalVol)}</td>
-        <td>100%</td>
-      </tr>` +
+        const t = tracosCache.find(x => x.id===tid);
+        return `<tr><td><strong>${t?t.codigo:"—"}</strong></td><td>${v.count}</td><td>${fmt(v.vol)}</td><td>${totalVol?fmt(v.vol/totalVol*100)+"%":"—"}</td></tr>`;
+      }).join("")+
+      `<tr style="font-weight:600;border-top:2px solid var(--border)"><td>TOTAL</td><td>${Object.values(porTraco).reduce((a,b)=>a+b.count,0)}</td><td>${fmt(totalVol)}</td><td>100%</td></tr>`+
       `</tbody></table>`;
   }
-
   const div2 = document.getElementById("rel-consumo-mat");
   div2.innerHTML = Object.entries(consumoMat).map(([k,v]) => {
-    const m = MATERIAIS.find(x => x.id === k);
+    const m = MATERIAIS.find(x => x.id===k);
     return `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);">
-      <span>${m ? m.label : k}</span>
+      <span>${m?m.label:k}</span>
       <span style="font-family:var(--font-head);font-weight:700;color:var(--accent)">${fmt(v,0)} kg</span>
     </div>`;
   }).join("") || '<div class="empty">Sem dados.</div>';
 };
 
-// ── EXPORTAR CSV
+// ── CSV
 window.exportarBetonadas = async function() {
-  const snap = await getDocs(query(collection(db, COL_BETONADAS), orderBy("data","desc")));
+  const snap = await getDocs(query(collection(db,COL_BETONADAS), orderBy("data","desc")));
   let csv = "Data;Hora;Traço;Fck;Volume(m³);Local;Operador;CP;ID_CP;Obs\n";
   snap.forEach(d => {
     const b = d.data();
-    const t = tracosCache.find(x => x.id === b.tracoid);
-    csv += [b.data,b.hora,t?t.codigo:"",t?t.fck:"",b.volume,b.local,b.operador,b.cp,b.cpId,b.obs]
-      .map(v=>`"${v||""}"`)
-      .join(";") + "\n";
+    const t = tracosCache.find(x => x.id===b.tracoid);
+    csv += [b.data,b.hora,t?t.codigo:"",t?t.fck:"",b.volume,b.local,b.operador,b.cp,b.cpId,b.obs].map(v=>`"${v||""}"`).join(";")+"\n";
   });
-  downloadCSV(csv, "betonadas.csv");
+  downloadCSV(csv,"betonadas.csv");
 };
 
 window.exportarMovimentacoes = async function() {
-  const snap = await getDocs(query(collection(db, COL_MOVS), orderBy("createdAt","desc")));
+  const snap = await getDocs(query(collection(db,COL_MOVS), orderBy("createdAt","desc")));
   let csv = "Data;Material;Tipo;Quantidade;Nota;Responsavel;Obs\n";
   snap.forEach(d => {
-    const m   = d.data();
-    const mat = MATERIAIS.find(x => x.id === m.material);
-    csv += [m.data, mat?mat.label:m.material, m.tipo, m.qtd, m.nota, m.responsavel, m.obs]
-      .map(v=>`"${v||""}"`)
-      .join(";") + "\n";
+    const m = d.data();
+    const mat = MATERIAIS.find(x => x.id===m.material);
+    csv += [m.data,mat?mat.label:m.material,m.tipo,m.qtd,m.nota,m.responsavel,m.obs].map(v=>`"${v||""}"`).join(";")+"\n";
   });
-  downloadCSV(csv, "movimentacoes.csv");
+  downloadCSV(csv,"movimentacoes.csv");
 };
 
 function downloadCSV(csv, filename) {
-  const blob = new Blob(["\uFEFF"+csv], {type:"text/csv;charset=utf-8;"});
-  const a    = document.createElement("a");
-  a.href     = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8;"}));
   a.download = filename;
   a.click();
 }
 
-// ── DEFAULTS e INIT
 document.getElementById("r-ini").value = new Date(new Date().setDate(1)).toISOString().split("T")[0];
 document.getElementById("r-fim").value = today();
 initApp();
-
 </script>
+
 </body>
 </html>
