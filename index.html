@@ -249,12 +249,15 @@
     </div>
     <div class="grid-3">
       <div class="form-group"><label>Água (L/m³) *</label><input type="number" id="t-agua" placeholder="180"></div>
-      <div class="form-group"><label>Aditivo (kg/m³)</label><input type="number" id="t-aditivo" placeholder="0"></div>
+      <div class="form-group"><label>Adt. Retardador (kg/m³)</label><input type="number" id="t-aditivo-ret" placeholder="0"></div>
+      <div class="form-group"><label>Adt. Plastificante (kg/m³)</label><input type="number" id="t-aditivo-pla" placeholder="0"></div>
+    </div>
+    <div class="grid-2">
       <div class="form-group"><label>Slump (cm)</label><input type="number" id="t-slump" placeholder="10"></div>
     </div>
     <div class="form-group">
       <label>Tipo de Brita</label>
-      <select id="t-tipo-brita"><option value="brita1">Brita 1</option><option value="brita0">Brita 0</option></select>
+      <select id="t-tipo-brita"><option value="brita1">Brita 1</option><option value="brita0">Brita 0</option><option value="brita2">Brita 2</option></select>
     </div>
     <div class="form-group"><label>Tipo de Cimento</label><input id="t-tipo-cimento" placeholder="CP II-Z-32"></div>
     <div class="form-group"><label>Observações</label><textarea id="t-obs"></textarea></div>
@@ -316,8 +319,10 @@
           <option value="areia_art">Areia Artificial</option>
           <option value="brita0">Brita 0</option>
           <option value="brita1">Brita 1</option>
+          <option value="brita2">Brita 2</option>
           <option value="agua">Água</option>
-          <option value="aditivo">Aditivo</option>
+          <option value="aditivo_ret">Aditivo Retardador</option>
+          <option value="aditivo_pla">Aditivo Plastificante</option>
         </select>
       </div>
       <div class="form-group"><label>Tipo *</label>
@@ -374,13 +379,15 @@ let tracosCache  = [];
 let estoqueCache = {};
 
 const MATERIAIS = [
-  {id:"cimento",   label:"Cimento",        unit:"kg", min:5000},
-  {id:"areia_nat", label:"Areia Natural",  unit:"kg", min:8000},
-  {id:"areia_art", label:"Areia Artificial",unit:"kg", min:8000},
-  {id:"brita0",    label:"Brita 0",        unit:"kg", min:5000},
-  {id:"brita1",    label:"Brita 1",        unit:"kg", min:5000},
-  {id:"agua",      label:"Água",           unit:"L",  min:2000},
-  {id:"aditivo",   label:"Aditivo",        unit:"kg", min:50},
+  {id:"cimento",   label:"Cimento",           unit:"kg", min:35000},
+  {id:"areia_nat", label:"Areia Natural",      unit:"kg", min:0},
+  {id:"areia_art", label:"Areia Artificial",   unit:"kg", min:0},
+  {id:"brita0",    label:"Brita 0",            unit:"kg", min:0},
+  {id:"brita1",    label:"Brita 1",            unit:"kg", min:0},
+  {id:"brita2",    label:"Brita 2",            unit:"kg", min:0},
+  {id:"agua",      label:"Água",               unit:"L",  min:0},
+  {id:"aditivo_ret", label:"Aditivo Retardador",   unit:"kg", min:0},
+  {id:"aditivo_pla", label:"Aditivo Plastificante", unit:"kg", min:0},
 ];
 
 // ── UTILITÁRIOS
@@ -407,7 +414,7 @@ document.querySelectorAll(".modal-overlay").forEach(m => {
 document.getElementById("btn-novo-traco").addEventListener("click", () => {
   document.getElementById("modal-traco-title").textContent = "Novo Traço";
   document.getElementById("traco-id").value = "";
-  ["t-codigo","t-fck","t-cimento","t-areia-nat","t-areia-art","t-brita","t-agua","t-aditivo","t-slump","t-tipo-cimento","t-obs"]
+  ["t-codigo","t-fck","t-cimento","t-areia-nat","t-areia-art","t-brita","t-agua","t-aditivo-ret","t-aditivo-pla","t-slump","t-tipo-cimento","t-obs"]
     .forEach(id => { document.getElementById(id).value = ""; });
   document.getElementById("t-tipo-brita").value = "brita1";
   document.getElementById("traco-preview").style.display = "none";
@@ -514,15 +521,16 @@ window.loadDashboard = async function() {
     document.getElementById("d-volHoje").textContent = fmt(volHoje);
     document.getElementById("d-tracos").textContent  = tracosCache.length;
     let alertas = 0;
-    MATERIAIS.forEach(m => { if((estoqueCache[m.id]||0) < m.min) alertas++; });
+    MATERIAIS.forEach(m => { if(m.min > 0 && (estoqueCache[m.id]||0) < m.min) alertas++; });
     document.getElementById("d-alertas").textContent = alertas;
 
     const estoqueDiv = document.getElementById("dash-estoque-list");
     estoqueDiv.innerHTML = "";
     MATERIAIS.forEach(m => {
       const saldo = estoqueCache[m.id]||0;
-      const pct   = Math.min(100,(saldo/(m.min*3))*100);
-      const cor   = saldo < m.min ? "var(--red)" : saldo < m.min*1.5 ? "var(--accent)" : "var(--green)";
+      const temMin = m.min > 0;
+      const pct    = temMin ? Math.min(100,(saldo/(m.min*3))*100) : 100;
+      const cor    = temMin ? (saldo < m.min ? "var(--red)" : saldo < m.min*1.5 ? "var(--accent)" : "var(--green)") : "var(--green)";
       estoqueDiv.innerHTML += `<div style="margin-bottom:12px;">
         <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
           <span>${m.label}</span><span style="font-weight:600;color:${cor}">${fmt(saldo,0)} ${m.unit}</span>
@@ -599,7 +607,8 @@ window.salvarTraco = async function() {
     areiaArt:    parseFloat(document.getElementById("t-areia-art").value)||0,
     brita:       parseFloat(document.getElementById("t-brita").value)||0,
     agua:        parseFloat(document.getElementById("t-agua").value)||0,
-    aditivo:     parseFloat(document.getElementById("t-aditivo").value)||0,
+    aditivoRet:  parseFloat(document.getElementById("t-aditivo-ret").value)||0,
+    aditivoPla:  parseFloat(document.getElementById("t-aditivo-pla").value)||0,
     slump:       parseFloat(document.getElementById("t-slump").value)||0,
     tipoBrita:   document.getElementById("t-tipo-brita").value,
     tipoCimento: document.getElementById("t-tipo-cimento").value.trim(),
@@ -627,7 +636,8 @@ window.editarTraco = function(id) {
   document.getElementById("t-areia-art").value    = t.areiaArt||0;
   document.getElementById("t-brita").value        = t.brita;
   document.getElementById("t-agua").value         = t.agua;
-  document.getElementById("t-aditivo").value      = t.aditivo||0;
+  document.getElementById("t-aditivo-ret").value  = t.aditivoRet||0;
+  document.getElementById("t-aditivo-pla").value  = t.aditivoPla||0;
   document.getElementById("t-slump").value        = t.slump||0;
   document.getElementById("t-tipo-brita").value   = t.tipoBrita||"brita1";
   document.getElementById("t-tipo-cimento").value = t.tipoCimento||"";
@@ -701,7 +711,8 @@ window.calcularConsumo = function() {
     {mat:matBrita,    label:"Brita",            val:(t.brita||0)*vol},
     {mat:"agua",      label:"Água",             val:(t.agua||0)*vol},
   ].filter(c => c.val > 0);
-  if(t.aditivo) consumos.push({mat:"aditivo",label:"Aditivo",val:t.aditivo*vol});
+  if(t.aditivoRet) consumos.push({mat:"aditivo_ret",label:"Adt. Retardador",val:t.aditivoRet*vol});
+  if(t.aditivoPla) consumos.push({mat:"aditivo_pla",label:"Adt. Plastificante",val:t.aditivoPla*vol});
   document.getElementById("bet-consumo-vals").innerHTML = consumos.map(c =>
     `<div class="stat-card" style="padding:10px;">
       <div class="stat-label">${c.label}</div>
@@ -739,7 +750,8 @@ window.salvarBetonada = async function() {
         {mat:matBrita,    val:(t.brita||0)*volume},
         {mat:"agua",      val:(t.agua||0)*volume},
       ].filter(c => c.val > 0);
-      if(t.aditivo) consumos.push({mat:"aditivo",val:t.aditivo*volume});
+      if(t.aditivoRet) consumos.push({mat:"aditivo_ret",val:t.aditivoRet*volume});
+      if(t.aditivoPla) consumos.push({mat:"aditivo_pla",val:t.aditivoPla*volume});
       for(const c of consumos) {
         await setEstoque(c.mat, (estoqueCache[c.mat]||0) - c.val);
         await addDoc(collection(db,COL_MOVS), {
@@ -770,16 +782,17 @@ window.loadEstoque = async function() {
   const alertDiv = document.getElementById("estoque-alerts");
   div.innerHTML = alertDiv.innerHTML = "";
   MATERIAIS.forEach(m => {
-    const saldo = estoqueCache[m.id]||0;
-    const pct   = Math.min(100,(saldo/(m.min*3))*100);
-    const cor   = saldo < m.min ? "var(--red)" : saldo < m.min*1.5 ? "var(--accent)" : "var(--green)";
-    if(saldo < m.min)
-      alertDiv.innerHTML += `<div class="alert alert-danger">⚠️ Estoque baixo: <strong>${m.label}</strong> — ${fmt(saldo,0)} ${m.unit} (mínimo: ${m.min} ${m.unit})</div>`;
+    const saldo  = estoqueCache[m.id]||0;
+    const temMin = m.min > 0;
+    const pct    = temMin ? Math.min(100,(saldo/(m.min*3))*100) : 100;
+    const cor    = temMin ? (saldo < m.min ? "var(--red)" : saldo < m.min*1.5 ? "var(--accent)" : "var(--green)") : "var(--green)";
+    if(temMin && saldo < m.min)
+      alertDiv.innerHTML += `<div class="alert alert-danger">⚠️ Estoque baixo: <strong>${m.label}</strong> — ${fmt(saldo,0)} ${m.unit} (mínimo: ${fmt(m.min,0)} ${m.unit})</div>`;
     div.innerHTML += `<div class="stat-card">
       <div class="stat-label">${m.label}</div>
       <div class="stat-value" style="color:${cor}">${fmt(saldo,0)}<span class="stat-unit">${m.unit}</span></div>
       <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:${cor}"></div></div>
-      <div class="stat-sub">Mínimo: ${m.min} ${m.unit}</div>
+      <div class="stat-sub">${temMin ? "Mínimo: " + fmt(m.min,0) + " " + m.unit : ""}</div>
     </div>`;
   });
   // Histórico
@@ -858,7 +871,8 @@ window.gerarRelatorio = async function() {
       [["cimento",t.cimento],["areia_nat",t.areiaNat||0],["areia_art",t.areiaArt||0],[mb,t.brita],["agua",t.agua]].forEach(([k,v]) => {
         if(v) consumoMat[k] = (consumoMat[k]||0)+v*vol;
       });
-      if(t.aditivo) consumoMat["aditivo"] = (consumoMat["aditivo"]||0)+t.aditivo*vol;
+      if(t.aditivoRet) consumoMat["aditivo_ret"] = (consumoMat["aditivo_ret"]||0)+t.aditivoRet*vol;
+      if(t.aditivoPla) consumoMat["aditivo_pla"] = (consumoMat["aditivo_pla"]||0)+t.aditivoPla*vol;
     }
   });
   const div1 = document.getElementById("rel-por-traco");
