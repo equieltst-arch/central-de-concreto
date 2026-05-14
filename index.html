@@ -98,7 +98,6 @@
   .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .6s linear infinite; margin-right: 6px; vertical-align: middle; }
   @keyframes spin { to { transform: rotate(360deg); } }
 </style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
 </head>
 <body>
 <div id="app">
@@ -229,7 +228,7 @@
   <div class="card">
     <div class="card-title">Exportar Dados</div>
     <div style="display:flex;gap:12px;flex-wrap:wrap;">
-      <button class="btn btn-primary" onclick="exportarBetonadas()">📊 Exportar Betonadas Excel</button>
+      <button class="btn btn-primary" onclick="exportarBetonadas()">🖨️ Exportar Betonadas PDF</button>
       <button class="btn btn-secondary" onclick="exportarMovimentacoes()">⬇ Movimentações CSV</button>
     </div>
   </div>
@@ -967,394 +966,482 @@ window.gerarRelatorio = async function() {
 
 // ── CSV
 window.exportarBetonadas = async function() {
-  showToast("Gerando planilha Excel...");
+  showToast("Gerando PDF...");
   const snap = await getDocs(query(collection(db, COL_BETONADAS), orderBy("data","desc")));
 
-  const wb = new ExcelJS.Workbook();
-  wb.creator  = "Central de Concreto PCH Lebon Régis";
-  wb.created  = new Date();
-  const ws    = wb.addWorksheet("Betonadas", { views:[{state:"frozen",ySplit:6}] });
-
-  // ── CORES
-  const AZUL_ESC  = "1A3A6B";
-  const AZUL_MED  = "2755A5";
-  const AZUL_CLAR = "D6E4F7";
-  const BRANCO    = "FFFFFF";
-  const AMARELO   = "F5C518";
-  const CINZA     = "EEF2F7";
-  const CINZA_BRD = "BDC7D8";
-
-  // ── LARGURAS
-  ws.columns = [
-    {width:14},{width:13},{width:11},{width:13},{width:11},
-    {width:18},{width:8}, {width:9}, {width:22},{width:26},
-    {width:14},{width:6}, {width:13},{width:22}
-  ];
-  const NC = 14;
-
-  const bdr = (cor=CINZA_BRD, est="thin") => ({
-    top:{style:est,color:{argb:"FF"+cor}}, bottom:{style:est,color:{argb:"FF"+cor}},
-    left:{style:est,color:{argb:"FF"+cor}}, right:{style:est,color:{argb:"FF"+cor}}
-  });
-  const bdrHdr = () => ({
-    top:{style:"medium",color:{argb:"FF"+AZUL_ESC}},
-    bottom:{style:"medium",color:{argb:"FF"+AZUL_ESC}},
-    left:{style:"medium",color:{argb:"FF"+AZUL_ESC}},
-    right:{style:"thin",color:{argb:"FF"+AZUL_MED}}
-  });
-  const fillSolid = cor => ({type:"pattern",pattern:"solid",fgColor:{argb:"FF"+cor}});
-  const aln = (h="center",v="middle",wrap=false) => ({horizontal:h,vertical:v,wrapText:wrap});
-
-  // ── HELPERS para estilizar linha inteira
-  const styleRow = (row, bg, fgCor, bold, sz, border, hAlign="center") => {
-    row.eachCell({includeEmpty:true}, c => {
-      c.fill      = fillSolid(bg);
-      c.font      = {name:"Calibri", bold, size:sz, color:{argb:"FF"+fgCor}};
-      c.alignment = aln(hAlign,"middle");
-      if(border) c.border = border;
-    });
-  };
-
-  // ── LINHA 1 — Empresa
-  ws.getRow(1).height = 32;
-  ws.mergeCells(1,1,1,NC);
-  const r1 = ws.getRow(1);
-  r1.getCell(1).value     = "BUCAGRANS CONSTRUTORA DE OBRAS S.A";
-  r1.getCell(1).font      = {name:"Calibri",bold:true,size:16,color:{argb:"FF"+BRANCO}};
-  r1.getCell(1).fill      = fillSolid("0D2149");
-  r1.getCell(1).alignment = aln("center","middle");
-
-  // ── LINHA 2 — Projeto
-  ws.getRow(2).height = 20;
-  ws.mergeCells(2,1,2,NC);
-  const r2 = ws.getRow(2);
-  r2.getCell(1).value     = "PCH LEBON RÉGIS  —  LABORATÓRIO DE CONTROLE DE CONCRETO";
-  r2.getCell(1).font      = {name:"Calibri",bold:true,size:11,color:{argb:"FF"+BRANCO}};
-  r2.getCell(1).fill      = fillSolid(AZUL_MED);
-  r2.getCell(1).alignment = aln("center","middle");
-
-  // ── LINHA 3 — Título
-  ws.getRow(3).height = 18;
-  ws.mergeCells(3,1,3,NC);
-  const r3 = ws.getRow(3);
-  r3.getCell(1).value     = "RELATÓRIO DE BETONADAS";
-  r3.getCell(1).font      = {name:"Calibri",bold:true,size:11,color:{argb:"FF"+AMARELO}};
-  r3.getCell(1).fill      = fillSolid(AZUL_MED);
-  r3.getCell(1).alignment = aln("center","middle");
-
-  // ── LINHA 4 — Gerado em
-  ws.getRow(4).height = 14;
-  ws.mergeCells(4,1,4,NC);
-  const hoje = new Date().toLocaleDateString("pt-BR");
-  const r4   = ws.getRow(4);
-  r4.getCell(1).value     = `Gerado em: ${hoje}                                                                  by Equiel`;
-  r4.getCell(1).font      = {name:"Calibri",size:8,italic:true,color:{argb:"FF888888"}};
-  r4.getCell(1).fill      = fillSolid(CINZA);
-  r4.getCell(1).alignment = aln("right","middle");
-
-  // ── LINHA 5 — espaço
-  ws.getRow(5).height = 5;
-  ws.mergeCells(5,1,5,NC);
-  ws.getRow(5).getCell(1).fill = fillSolid(CINZA);
-
-  // ── LINHA 6 — Cabeçalhos
-  ws.getRow(6).height = 36;
-  const headers = [
-    "Nº Liberação","Data Início","Hora Início","Data Término","Hora Término",
-    "Traço","Fck
-(MPa)","Volume
-(m³)","Local / Estrutura",
-    "Descrição do Serviço","Operador","CP?","Nº CP","Observações"
-  ];
-  headers.forEach((h,i) => {
-    const c = ws.getRow(6).getCell(i+1);
-    c.value     = h;
-    c.font      = {name:"Calibri",bold:true,size:10,color:{argb:"FF"+BRANCO}};
-    c.fill      = fillSolid(AZUL_ESC);
-    c.alignment = aln("center","middle",true);
-    c.border    = bdrHdr();
-  });
-
-  // ── DADOS
   const fD = v => v ? v.split("-").reverse().join("/") : "";
-  let count=0, totalVol=0, dataRow=7;
+  let rows = "", count = 0, totalVol = 0;
+
   snap.forEach(d => {
     const b   = d.data();
-    const t   = tracosCache.find(x => x.id===b.tracoid);
-    const par = count%2===0;
-    const bg  = par ? AZUL_CLAR : BRANCO;
-    const vals = [
-      b.liberacao||"",  fD(b.data),  b.hora||"",
-      fD(b.dataFim||""), b.horaFim||"",
-      t?t.codigo:"—",   t?t.fck:"",
-      parseFloat(b.volume)||0,
-      b.local||"",      b.descricao||"",
-      b.operador||"",   b.cp==="sim"?"SIM":"NÃO",
-      b.cpId||"",       b.obs||""
-    ];
-    const row = ws.getRow(dataRow+count);
-    row.height = 18;
-    vals.forEach((v,i) => {
-      const c   = row.getCell(i+1);
-      c.value   = v;
-      c.fill    = fillSolid(bg);
-      c.border  = bdr(CINZA_BRD,"hair");
-      c.alignment = aln("center","middle");
-      c.font    = {name:"Calibri",size:9,bold:i===0,color:{argb:"FF"+(i===0?AZUL_ESC:"1A1A1A")}};
-    });
+    const t   = tracosCache.find(x => x.id === b.tracoid);
+    const par = count % 2 === 0;
+    const bg  = par ? "#dce8f7" : "#ffffff";
+    const termino = b.dataFim
+      ? `${fD(b.dataFim)} ${b.horaFim||""}`
+      : '<span style="color:#c0392b;font-size:9px;">⏳ pendente</span>';
+    rows += `<tr style="background:${bg}">
+      <td>${b.liberacao||"—"}</td>
+      <td>${fD(b.data)} ${b.hora||""}</td>
+      <td>${termino}</td>
+      <td><strong>${t?t.codigo:"—"}</strong></td>
+      <td>${t?t.fck:"—"}</td>
+      <td><strong>${parseFloat(b.volume||0).toFixed(1)}</strong></td>
+      <td>${b.local||"—"}</td>
+      <td>${b.descricao||"—"}</td>
+      <td>${b.operador||"—"}</td>
+      <td style="text-align:center">${b.cp==="sim"?'<span style="color:#1a7a3a;font-weight:700">SIM</span>':'NÃO'}</td>
+      <td>${b.cpId||"—"}</td>
+    </tr>`;
     totalVol += parseFloat(b.volume)||0;
     count++;
   });
 
-  // ── TOTAL
-  const totRow = dataRow+count;
-  ws.getRow(totRow).height = 22;
-  ws.mergeCells(totRow,1,totRow,6);
-  for(let col=1;col<=NC;col++){
-    const c=ws.getRow(totRow).getCell(col);
-    c.fill   = fillSolid(AZUL_ESC);
-    c.border = bdr(AZUL_MED,"thin");
+  const hoje = new Date().toLocaleDateString("pt-BR");
+  const html = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Betonadas PCH Lebon Régis</title>
+<style>
+  @page { size: A4 landscape; margin: 12mm 10mm; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family: Arial, sans-serif; font-size: 9px; color: #1a1a1a; }
+
+  /* CABEÇALHO */
+  .cabecalho { background: #0D2149; color: #fff; padding: 10px 14px 8px; margin-bottom: 0; }
+  .empresa { font-size: 15px; font-weight: 700; letter-spacing: 0.5px; }
+  .projeto { font-size: 10px; color: #a8c4e8; margin-top: 2px; letter-spacing: 0.3px; }
+  .titulo-bar { background: #2755A5; color: #F5C518; font-size: 11px; font-weight: 700;
+    padding: 5px 14px; letter-spacing: 1px; text-transform: uppercase; }
+  .meta-bar { background: #EEF2F7; color: #666; font-size: 8px; padding: 3px 14px;
+    display:flex; justify-content:space-between; border-bottom: 1px solid #BDC7D8; }
+
+  /* TABELA */
+  table { width: 100%; border-collapse: collapse; margin-top: 0; }
+  thead tr { background: #1A3A6B; }
+  thead th { color: #fff; font-size: 8px; font-weight: 700; padding: 6px 4px;
+    text-align: center; border: 1px solid #2755A5; letter-spacing: 0.3px; }
+  tbody td { padding: 5px 4px; border: 1px solid #c8d6e8; font-size: 8.5px;
+    text-align: center; vertical-align: middle; }
+  tbody tr:hover { background: #c8ddf5 !important; }
+
+  /* TOTAIS */
+  .total-row { background: #1A3A6B !important; }
+  .total-row td { color: #fff; font-weight: 700; font-size: 9px; border-color: #2755A5; }
+  .total-vol { color: #F5C518 !important; font-size: 11px !important; }
+
+  /* RODAPÉ */
+  .rodape { margin-top: 8px; display:flex; justify-content:space-between;
+    font-size: 7.5px; color: #999; font-style: italic; border-top: 1px solid #ddd; padding-top: 4px; }
+
+  @media print {
+    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   }
-  const cTot=ws.getRow(totRow).getCell(1);
-  cTot.value     = `TOTAL  —  ${count} betonada(s)`;
-  cTot.font      = {name:"Calibri",bold:true,size:11,color:{argb:"FF"+BRANCO}};
-  cTot.alignment = aln("center","middle");
-  const cVol=ws.getRow(totRow).getCell(8);
-  cVol.value     = parseFloat(totalVol.toFixed(2));
-  cVol.font      = {name:"Calibri",bold:true,size:12,color:{argb:"FF"+AMARELO}};
-  cVol.alignment = aln("center","middle");
-  cVol.numFmt    = "0.00";
-  ws.getRow(totRow).getCell(7).value = "m³";
-  ws.getRow(totRow).getCell(7).font  = {name:"Calibri",bold:true,size:9,color:{argb:"FF"+AMARELO}};
-  ws.getRow(totRow).getCell(7).alignment = aln("center","middle");
+</style>
 
-  // ── RODAPÉ
-  const rodRow = totRow+2;
-  ws.getRow(rodRow).height = 14;
-  ws.mergeCells(rodRow,1,rodRow,NC);
-  const cRod = ws.getRow(rodRow).getCell(1);
-  cRod.value     = "Documento gerado automaticamente pelo Sistema Central de Concreto — PCH Lebon Régis  |  by Equiel";
-  cRod.font      = {name:"Calibri",size:8,italic:true,color:{argb:"FFAAAAAA"}};
-  cRod.fill      = fillSolid("F9FAFB");
-  cRod.alignment = aln("left","middle");
+</head>
+<body>
 
-  // ── FILTRO AUTOMÁTICO
-  ws.autoFilter = { from:{row:6,column:1}, to:{row:6,column:NC} };
+<div class="cabecalho">
+  <div class="empresa">BUCAGRANS CONSTRUTORA DE OBRAS S.A</div>
+  <div class="projeto">PCH LEBON RÉGIS — Laboratório de Controle de Concreto</div>
+</div>
+<div class="titulo-bar">Relatório de Betonadas</div>
+<div class="meta-bar">
+  <span>Gerado em: ${hoje}</span>
+  <span>Total: ${count} betonada(s) &nbsp;|&nbsp; Volume total: ${totalVol.toFixed(2)} m³</span>
+  <span>by Equiel</span>
+</div>
 
-  // ── DOWNLOAD
-  const buf  = await wb.xlsx.writeBuffer();
-  const blob = new Blob([buf], {type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
-  const a    = document.createElement("a");
-  a.href     = URL.createObjectURL(blob);
-  a.download = "Betonadas_PCH_"+new Date().toISOString().slice(0,10)+".xlsx";
-  a.click();
-  showToast("✅ Planilha Excel gerada!");
+<table>
+  <thead>
+    <tr>
+      <th>Nº Lib.</th>
+      <th>Início</th>
+      <th>Término</th>
+      <th>Traço</th>
+      <th>Fck (MPa)</th>
+      <th>Vol (m³)</th>
+      <th>Local / Estrutura</th>
+      <th>Descrição do Serviço</th>
+      <th>Operador</th>
+      <th>CP?</th>
+      <th>Nº CP</th>
+    </tr>
+  </thead>
+  <tbody>
+    ${rows}
+    <tr class="total-row">
+      <td colspan="5" style="text-align:right;padding-right:10px;">TOTAL — ${count} betonada(s)</td>
+      <td class="total-vol">${totalVol.toFixed(2)} m³</td>
+      <td colspan="5"></td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="rodape">
+  <span>Documento gerado automaticamente pelo Sistema Central de Concreto — PCH Lebon Régis</span>
+  <span>by Equiel</span>
+</div>
+
+</body>
+</html>`;
+
+const win = window.open(””, “_blank”, “width=1100,height=750”);
+win.document.write(html);
+win.document.close();
+win.onload = () => {
+setTimeout(() => {
+win.print();
+}, 400);
 };
-  const ref = {s:{r:0,c:0},e:{r:0,c:0}};
-  const AZUL_ESC="1A3A6B", AZUL_MED="2755A5", AZUL_CLAR="D6E4F7", BRANCO="FFFFFF", AMARELO="F5C518", CINZA="F2F2F2";
+};
+c.alignment = aln(hAlign,“middle”);
+if(border) c.border = border;
+});
+};
 
-  const cell = (v,s) => ({v, t:typeof v==="number"?"n":"s", s});
-  const hdr = v => cell(v,{
-    font:{bold:true,color:{rgb:BRANCO},sz:10,name:"Arial"},
-    fill:{fgColor:{rgb:AZUL_ESC}},
-    alignment:{horizontal:"center",vertical:"center",wrapText:true},
-    border:{bottom:{style:"thin",color:{rgb:AZUL_MED}},right:{style:"thin",color:{rgb:AZUL_MED}}}
-  });
-  const dat = (v,par,bold=false) => cell(v,{
-    font:{bold,sz:9,name:"Arial",color:{rgb:"1A1A1A"}},
-    fill:{fgColor:{rgb:par?AZUL_CLAR:BRANCO}},
-    alignment:{horizontal:"center",vertical:"center"},
-    border:{bottom:{style:"hair",color:{rgb:"CCCCCC"}},right:{style:"hair",color:{rgb:"CCCCCC"}}}
-  });
-  const tit = (v,sz=13) => cell(v,{
-    font:{bold:true,sz,name:"Arial",color:{rgb:BRANCO}},
-    fill:{fgColor:{rgb:AZUL_MED}},
-    alignment:{horizontal:"center",vertical:"center"}
-  });
-  const sub = v => cell(v,{
-    font:{bold:false,sz:9,name:"Arial",color:{rgb:BRANCO}},
-    fill:{fgColor:{rgb:AZUL_MED}},
-    alignment:{horizontal:"center",vertical:"center"}
-  });
+// ── LINHA 1 — Empresa
+ws.getRow(1).height = 32;
+ws.mergeCells(1,1,1,NC);
+const r1 = ws.getRow(1);
+r1.getCell(1).value     = “BUCAGRANS CONSTRUTORA DE OBRAS S.A”;
+r1.getCell(1).font      = {name:“Calibri”,bold:true,size:16,color:{argb:“FF”+BRANCO}};
+r1.getCell(1).fill      = fillSolid(“0D2149”);
+r1.getCell(1).alignment = aln(“center”,“middle”);
 
-  const sc = (r,c,v) => {
-    ws[XLSX.utils.encode_cell({r,c})]=v;
-    if(r>ref.e.r) ref.e.r=r;
-    if(c>ref.e.c) ref.e.c=c;
-  };
+// ── LINHA 2 — Projeto
+ws.getRow(2).height = 20;
+ws.mergeCells(2,1,2,NC);
+const r2 = ws.getRow(2);
+r2.getCell(1).value     = “PCH LEBON RÉGIS  —  LABORATÓRIO DE CONTROLE DE CONCRETO”;
+r2.getCell(1).font      = {name:“Calibri”,bold:true,size:11,color:{argb:“FF”+BRANCO}};
+r2.getCell(1).fill      = fillSolid(AZUL_MED);
+r2.getCell(1).alignment = aln(“center”,“middle”);
 
-  let row=0;
-  sc(row,0,tit("BUCAGRANS CONSTRUTORA DE OBRAS S.A",14)); row++;
-  sc(row,0,sub("PCH LEBON RÉGIS  —  LABORATÓRIO DE CONTROLE DE CONCRETO")); row++;
-  sc(row,0,sub("RELATÓRIO DE BETONADAS")); row++;
-  sc(row,0,cell("Gerado em: "+new Date().toLocaleDateString("pt-BR")+"   |   by Equiel",{font:{sz:8,italic:true,color:{rgb:"888888"},name:"Arial"},fill:{fgColor:{rgb:CINZA}},alignment:{horizontal:"right"}})); row++;
-  row++;
+// ── LINHA 3 — Título
+ws.getRow(3).height = 18;
+ws.mergeCells(3,1,3,NC);
+const r3 = ws.getRow(3);
+r3.getCell(1).value     = “RELATÓRIO DE BETONADAS”;
+r3.getCell(1).font      = {name:“Calibri”,bold:true,size:11,color:{argb:“FF”+AMARELO}};
+r3.getCell(1).fill      = fillSolid(AZUL_MED);
+r3.getCell(1).alignment = aln(“center”,“middle”);
 
-  const headers=["Nº Liberação","Data Início","Hora Início","Data Término","Hora Término","Traço","Fck (MPa)","Volume (m³)","Local / Estrutura","Descrição do Serviço","Operador","CP?","Nº CP","Observações"];
-  const hRow=row;
-  headers.forEach((h,c)=>sc(row,c,hdr(h))); row++;
+// ── LINHA 4 — Gerado em
+ws.getRow(4).height = 14;
+ws.mergeCells(4,1,4,NC);
+const hoje = new Date().toLocaleDateString(“pt-BR”);
+const r4   = ws.getRow(4);
+r4.getCell(1).value     = `Gerado em: ${hoje}                                                                  by Equiel`;
+r4.getCell(1).font      = {name:“Calibri”,size:8,italic:true,color:{argb:“FF888888”}};
+r4.getCell(1).fill      = fillSolid(CINZA);
+r4.getCell(1).alignment = aln(“right”,“middle”);
 
-  const fD=v=>v?v.split("-").reverse().join("/"):"";
-  let count=0, totalVol=0;
-  snap.forEach(d=>{
-    const b=d.data(), t=tracosCache.find(x=>x.id===b.tracoid), par=count%2===0;
-    [b.liberacao||"",fD(b.data),b.hora||"",fD(b.dataFim||""),b.horaFim||"",
-     t?t.codigo:"—",t?t.fck:"",parseFloat(b.volume)||0,
-     b.local||"",b.descricao||"",b.operador||"",
-     b.cp==="sim"?"SIM":"NÃO",b.cpId||"",b.obs||""
-    ].forEach((v,c)=>sc(row,c,dat(v,par,c===0)));
-    totalVol+=parseFloat(b.volume)||0; count++; row++;
-  });
+// ── LINHA 5 — espaço
+ws.getRow(5).height = 5;
+ws.mergeCells(5,1,5,NC);
+ws.getRow(5).getCell(1).fill = fillSolid(CINZA);
 
-  const totRow=row;
-  const totSt={font:{bold:true,sz:10,color:{rgb:BRANCO},name:"Arial"},fill:{fgColor:{rgb:AZUL_ESC}},alignment:{horizontal:"center"}};
-  for(let c=0;c<14;c++) sc(totRow,c,cell("",{fill:{fgColor:{rgb:AZUL_ESC}}}));
-  sc(totRow,0,cell("TOTAL",totSt));
-  sc(totRow,6,cell("Betonadas: "+count,totSt));
-  sc(totRow,7,cell(parseFloat(totalVol.toFixed(2)),{font:{bold:true,sz:10,color:{rgb:AMARELO},name:"Arial"},fill:{fgColor:{rgb:AZUL_ESC}},alignment:{horizontal:"center"},numFmt:"0.00"}));
-  row+=2;
-  sc(row,0,cell("Documento gerado automaticamente pelo Sistema Central de Concreto — PCH Lebon Régis  |  by Equiel",{font:{sz:8,italic:true,color:{rgb:"AAAAAA"},name:"Arial"},alignment:{horizontal:"left"}}));
+// ── LINHA 6 — Cabeçalhos
+ws.getRow(6).height = 36;
+const headers = [
+“Nº Liberação”,“Data Início”,“Hora Início”,“Data Término”,“Hora Término”,
+“Traço”,“Fck
+(MPa)”,“Volume
+(m³)”,“Local / Estrutura”,
+“Descrição do Serviço”,“Operador”,“CP?”,“Nº CP”,“Observações”
+];
+headers.forEach((h,i) => {
+const c = ws.getRow(6).getCell(i+1);
+c.value     = h;
+c.font      = {name:“Calibri”,bold:true,size:10,color:{argb:“FF”+BRANCO}};
+c.fill      = fillSolid(AZUL_ESC);
+c.alignment = aln(“center”,“middle”,true);
+c.border    = bdrHdr();
+});
 
-  const NC=13;
-  ws["!merges"]=[
-    {s:{r:0,c:0},e:{r:0,c:NC}},{s:{r:1,c:0},e:{r:1,c:NC}},
-    {s:{r:2,c:0},e:{r:2,c:NC}},{s:{r:3,c:0},e:{r:3,c:NC}},
-    {s:{r:totRow,c:0},e:{r:totRow,c:5}},
-    {s:{r:row,c:0},e:{r:row,c:NC}},
-  ];
-  ws["!cols"]=[{wch:14},{wch:12},{wch:10},{wch:12},{wch:10},{wch:16},{wch:8},{wch:9},{wch:22},{wch:24},{wch:14},{wch:6},{wch:12},{wch:22}];
-  ws["!rows"]=[];
-  ws["!rows"][0]={hpt:30};ws["!rows"][1]={hpt:20};ws["!rows"][2]={hpt:18};ws["!rows"][3]={hpt:14};ws["!rows"][hRow]={hpt:34};
-  ws["!ref"]=XLSX.utils.encode_range(ref);
-  XLSX.utils.book_append_sheet(wb,ws,"Betonadas");
-  XLSX.writeFile(wb,"Betonadas_PCH_"+new Date().toISOString().slice(0,10)+".xlsx");
-  showToast("Planilha Excel gerada!");
+// ── DADOS
+const fD = v => v ? v.split(”-”).reverse().join(”/”) : “”;
+let count=0, totalVol=0, dataRow=7;
+snap.forEach(d => {
+const b   = d.data();
+const t   = tracosCache.find(x => x.id===b.tracoid);
+const par = count%2===0;
+const bg  = par ? AZUL_CLAR : BRANCO;
+const vals = [
+b.liberacao||””,  fD(b.data),  b.hora||””,
+fD(b.dataFim||””), b.horaFim||””,
+t?t.codigo:”—”,   t?t.fck:””,
+parseFloat(b.volume)||0,
+b.local||””,      b.descricao||””,
+b.operador||””,   b.cp===“sim”?“SIM”:“NÃO”,
+b.cpId||””,       b.obs||””
+];
+const row = ws.getRow(dataRow+count);
+row.height = 18;
+vals.forEach((v,i) => {
+const c   = row.getCell(i+1);
+c.value   = v;
+c.fill    = fillSolid(bg);
+c.border  = bdr(CINZA_BRD,“hair”);
+c.alignment = aln(“center”,“middle”);
+c.font    = {name:“Calibri”,size:9,bold:i===0,color:{argb:“FF”+(i===0?AZUL_ESC:“1A1A1A”)}};
+});
+totalVol += parseFloat(b.volume)||0;
+count++;
+});
+
+// ── TOTAL
+const totRow = dataRow+count;
+ws.getRow(totRow).height = 22;
+ws.mergeCells(totRow,1,totRow,6);
+for(let col=1;col<=NC;col++){
+const c=ws.getRow(totRow).getCell(col);
+c.fill   = fillSolid(AZUL_ESC);
+c.border = bdr(AZUL_MED,“thin”);
+}
+const cTot=ws.getRow(totRow).getCell(1);
+cTot.value     = `TOTAL  —  ${count} betonada(s)`;
+cTot.font      = {name:“Calibri”,bold:true,size:11,color:{argb:“FF”+BRANCO}};
+cTot.alignment = aln(“center”,“middle”);
+const cVol=ws.getRow(totRow).getCell(8);
+cVol.value     = parseFloat(totalVol.toFixed(2));
+cVol.font      = {name:“Calibri”,bold:true,size:12,color:{argb:“FF”+AMARELO}};
+cVol.alignment = aln(“center”,“middle”);
+cVol.numFmt    = “0.00”;
+ws.getRow(totRow).getCell(7).value = “m³”;
+ws.getRow(totRow).getCell(7).font  = {name:“Calibri”,bold:true,size:9,color:{argb:“FF”+AMARELO}};
+ws.getRow(totRow).getCell(7).alignment = aln(“center”,“middle”);
+
+// ── RODAPÉ
+const rodRow = totRow+2;
+ws.getRow(rodRow).height = 14;
+ws.mergeCells(rodRow,1,rodRow,NC);
+const cRod = ws.getRow(rodRow).getCell(1);
+cRod.value     = “Documento gerado automaticamente pelo Sistema Central de Concreto — PCH Lebon Régis  |  by Equiel”;
+cRod.font      = {name:“Calibri”,size:8,italic:true,color:{argb:“FFAAAAAA”}};
+cRod.fill      = fillSolid(“F9FAFB”);
+cRod.alignment = aln(“left”,“middle”);
+
+// ── FILTRO AUTOMÁTICO
+ws.autoFilter = { from:{row:6,column:1}, to:{row:6,column:NC} };
+
+// ── DOWNLOAD
+const buf  = await wb.xlsx.writeBuffer();
+const blob = new Blob([buf], {type:“application/vnd.openxmlformats-officedocument.spreadsheetml.sheet”});
+const a    = document.createElement(“a”);
+a.href     = URL.createObjectURL(blob);
+a.download = “Betonadas_PCH_”+new Date().toISOString().slice(0,10)+”.xlsx”;
+a.click();
+showToast(“✅ Planilha Excel gerada!”);
+};
+const ref = {s:{r:0,c:0},e:{r:0,c:0}};
+const AZUL_ESC=“1A3A6B”, AZUL_MED=“2755A5”, AZUL_CLAR=“D6E4F7”, BRANCO=“FFFFFF”, AMARELO=“F5C518”, CINZA=“F2F2F2”;
+
+const cell = (v,s) => ({v, t:typeof v===“number”?“n”:“s”, s});
+const hdr = v => cell(v,{
+font:{bold:true,color:{rgb:BRANCO},sz:10,name:“Arial”},
+fill:{fgColor:{rgb:AZUL_ESC}},
+alignment:{horizontal:“center”,vertical:“center”,wrapText:true},
+border:{bottom:{style:“thin”,color:{rgb:AZUL_MED}},right:{style:“thin”,color:{rgb:AZUL_MED}}}
+});
+const dat = (v,par,bold=false) => cell(v,{
+font:{bold,sz:9,name:“Arial”,color:{rgb:“1A1A1A”}},
+fill:{fgColor:{rgb:par?AZUL_CLAR:BRANCO}},
+alignment:{horizontal:“center”,vertical:“center”},
+border:{bottom:{style:“hair”,color:{rgb:“CCCCCC”}},right:{style:“hair”,color:{rgb:“CCCCCC”}}}
+});
+const tit = (v,sz=13) => cell(v,{
+font:{bold:true,sz,name:“Arial”,color:{rgb:BRANCO}},
+fill:{fgColor:{rgb:AZUL_MED}},
+alignment:{horizontal:“center”,vertical:“center”}
+});
+const sub = v => cell(v,{
+font:{bold:false,sz:9,name:“Arial”,color:{rgb:BRANCO}},
+fill:{fgColor:{rgb:AZUL_MED}},
+alignment:{horizontal:“center”,vertical:“center”}
+});
+
+const sc = (r,c,v) => {
+ws[XLSX.utils.encode_cell({r,c})]=v;
+if(r>ref.e.r) ref.e.r=r;
+if(c>ref.e.c) ref.e.c=c;
+};
+
+let row=0;
+sc(row,0,tit(“BUCAGRANS CONSTRUTORA DE OBRAS S.A”,14)); row++;
+sc(row,0,sub(“PCH LEBON RÉGIS  —  LABORATÓRIO DE CONTROLE DE CONCRETO”)); row++;
+sc(row,0,sub(“RELATÓRIO DE BETONADAS”)); row++;
+sc(row,0,cell(“Gerado em: “+new Date().toLocaleDateString(“pt-BR”)+”   |   by Equiel”,{font:{sz:8,italic:true,color:{rgb:“888888”},name:“Arial”},fill:{fgColor:{rgb:CINZA}},alignment:{horizontal:“right”}})); row++;
+row++;
+
+const headers=[“Nº Liberação”,“Data Início”,“Hora Início”,“Data Término”,“Hora Término”,“Traço”,“Fck (MPa)”,“Volume (m³)”,“Local / Estrutura”,“Descrição do Serviço”,“Operador”,“CP?”,“Nº CP”,“Observações”];
+const hRow=row;
+headers.forEach((h,c)=>sc(row,c,hdr(h))); row++;
+
+const fD=v=>v?v.split(”-”).reverse().join(”/”):””;
+let count=0, totalVol=0;
+snap.forEach(d=>{
+const b=d.data(), t=tracosCache.find(x=>x.id===b.tracoid), par=count%2===0;
+[b.liberacao||””,fD(b.data),b.hora||””,fD(b.dataFim||””),b.horaFim||””,
+t?t.codigo:”—”,t?t.fck:””,parseFloat(b.volume)||0,
+b.local||””,b.descricao||””,b.operador||””,
+b.cp===“sim”?“SIM”:“NÃO”,b.cpId||””,b.obs||””
+].forEach((v,c)=>sc(row,c,dat(v,par,c===0)));
+totalVol+=parseFloat(b.volume)||0; count++; row++;
+});
+
+const totRow=row;
+const totSt={font:{bold:true,sz:10,color:{rgb:BRANCO},name:“Arial”},fill:{fgColor:{rgb:AZUL_ESC}},alignment:{horizontal:“center”}};
+for(let c=0;c<14;c++) sc(totRow,c,cell(””,{fill:{fgColor:{rgb:AZUL_ESC}}}));
+sc(totRow,0,cell(“TOTAL”,totSt));
+sc(totRow,6,cell(“Betonadas: “+count,totSt));
+sc(totRow,7,cell(parseFloat(totalVol.toFixed(2)),{font:{bold:true,sz:10,color:{rgb:AMARELO},name:“Arial”},fill:{fgColor:{rgb:AZUL_ESC}},alignment:{horizontal:“center”},numFmt:“0.00”}));
+row+=2;
+sc(row,0,cell(“Documento gerado automaticamente pelo Sistema Central de Concreto — PCH Lebon Régis  |  by Equiel”,{font:{sz:8,italic:true,color:{rgb:“AAAAAA”},name:“Arial”},alignment:{horizontal:“left”}}));
+
+const NC=13;
+ws[”!merges”]=[
+{s:{r:0,c:0},e:{r:0,c:NC}},{s:{r:1,c:0},e:{r:1,c:NC}},
+{s:{r:2,c:0},e:{r:2,c:NC}},{s:{r:3,c:0},e:{r:3,c:NC}},
+{s:{r:totRow,c:0},e:{r:totRow,c:5}},
+{s:{r:row,c:0},e:{r:row,c:NC}},
+];
+ws[”!cols”]=[{wch:14},{wch:12},{wch:10},{wch:12},{wch:10},{wch:16},{wch:8},{wch:9},{wch:22},{wch:24},{wch:14},{wch:6},{wch:12},{wch:22}];
+ws[”!rows”]=[];
+ws[”!rows”][0]={hpt:30};ws[”!rows”][1]={hpt:20};ws[”!rows”][2]={hpt:18};ws[”!rows”][3]={hpt:14};ws[”!rows”][hRow]={hpt:34};
+ws[”!ref”]=XLSX.utils.encode_range(ref);
+XLSX.utils.book_append_sheet(wb,ws,“Betonadas”);
+XLSX.writeFile(wb,“Betonadas_PCH_”+new Date().toISOString().slice(0,10)+”.xlsx”);
+showToast(“Planilha Excel gerada!”);
 };
 
 window.exportarMovimentacoes = async function() {
-  const snap = await getDocs(query(collection(db,COL_MOVS), orderBy("createdAt","desc")));
-  let csv = "Data;Material;Tipo;Quantidade;Nota;Responsavel;Obs\n";
-  snap.forEach(d => {
-    const m = d.data();
-    const mat = MATERIAIS.find(x => x.id===m.material);
-    csv += [m.data,mat?mat.label:m.material,m.tipo,m.qtd,m.nota,m.responsavel,m.obs].map(v=>`"${v||""}"`).join(";")+"\n";
-  });
-  downloadCSV(csv,"movimentacoes.csv");
+const snap = await getDocs(query(collection(db,COL_MOVS), orderBy(“createdAt”,“desc”)));
+let csv = “Data;Material;Tipo;Quantidade;Nota;Responsavel;Obs\n”;
+snap.forEach(d => {
+const m = d.data();
+const mat = MATERIAIS.find(x => x.id===m.material);
+csv += [m.data,mat?mat.label:m.material,m.tipo,m.qtd,m.nota,m.responsavel,m.obs].map(v=>`"${v||""}"`).join(”;”)+”\n”;
+});
+downloadCSV(csv,“movimentacoes.csv”);
 };
 
 function downloadCSV(csv, filename) {
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8;"}));
-  a.download = filename;
-  a.click();
+const a = document.createElement(“a”);
+a.href = URL.createObjectURL(new Blob([”\uFEFF”+csv],{type:“text/csv;charset=utf-8;”}));
+a.download = filename;
+a.click();
 }
 
 // ── IMPORTAR TRAÇOS DA TABELA PCH
-document.getElementById("btn-importar-tracos").addEventListener("click", () => {
-  if(!confirm("Importar os 3 traços da Tabela de Traços PCH Lebon Régis (Rev.00)?\n\nTraços que serão cadastrados:\n• 9.28.1.B.00 — Classe D, fck 9 MPa\n• 9.28 ARGAM — Classe C (Argamassa), fck 9 MPa\n• 20.28.1.B.00 — Classe B, fck 20 MPa")) return;
-  importarTracosTabela();
+document.getElementById(“btn-importar-tracos”).addEventListener(“click”, () => {
+if(!confirm(“Importar os 3 traços da Tabela de Traços PCH Lebon Régis (Rev.00)?\n\nTraços que serão cadastrados:\n• 9.28.1.B.00 — Classe D, fck 9 MPa\n• 9.28 ARGAM — Classe C (Argamassa), fck 9 MPa\n• 20.28.1.B.00 — Classe B, fck 20 MPa”)) return;
+importarTracosTabela();
 });
 
 async function importarTracosTabela() {
-  // Dados exatos da Tabela de Traços PCH Lebon Régis Rev.00
-  const tracos = [
-    {
-      codigo:      "9.28.1.B.00",
-      classe:      "D",
-      fck:         9,
-      tipoCimento: "CP IV 32 - Votoran",
-      dmaxMm:      12.5,
-      acEq:        0.80,
-      cimento:     231,
-      agua:        185,
-      areiaNat:    255,
-      areiaArt:    0,
-      brita:       689,     // A A Britagem
-      tipoBrita:   "brita0", // Brita 12,5 mm
-      pedrisco:    162,
-      aditivoPla:  1.85,
-      aditivoRet:  0,
-      slump:       12,
-      obs:         "Concreto de Enchimento e Regularização; Barragem e Muro de Gravidade. Dmáx 12,5mm. A/Ceq=0,80. Massa unitária: 2.438 kg/m³",
-    },
-    {
-      codigo:      "9.28 ARGAM",
-      classe:      "C",
-      fck:         9,
-      tipoCimento: "CP IV 32 - Votoran",
-      dmaxMm:      4.8,
-      acEq:        0.80,
-      cimento:     373,
-      agua:        299,
-      areiaNat:    412,
-      areiaArt:    0,
-      brita:       1114,    // A A Britagem
-      tipoBrita:   "brita0",
-      pedrisco:    0,
-      aditivoPla:  2.98,
-      aditivoRet:  0,
-      slump:       0,       // FLUIDO
-      obs:         "Argamassa / Concreto Fluido. Dmáx 4,8mm. A/Ceq=0,80. Slump: FLUIDO. Massa unitária: 2.198 kg/m³",
-    },
-    {
-      codigo:      "20.28.1.B.00",
-      classe:      "B",
-      fck:         20,
-      tipoCimento: "CP IV 32 - Votoran",
-      dmaxMm:      12.5,
-      acEq:        0.57,
-      cimento:     325,
-      agua:        185,
-      areiaNat:    244,
-      areiaArt:    0,
-      brita:       658,     // Brita 12,5 mm
-      tipoBrita:   "brita0",
-      pedrisco:    155,
-      aditivoPla:  2.59,
-      aditivoRet:  0,
-      slump:       12,
-      obs:         "Base de Subestação, Blocos de ancoragem, Fundação em geral. Dmáx 12,5mm. A/Ceq=0,57. Massa unitária: 2.443 kg/m³",
-    },
-  ];
+// Dados exatos da Tabela de Traços PCH Lebon Régis Rev.00
+const tracos = [
+{
+codigo:      “9.28.1.B.00”,
+classe:      “D”,
+fck:         9,
+tipoCimento: “CP IV 32 - Votoran”,
+dmaxMm:      12.5,
+acEq:        0.80,
+cimento:     231,
+agua:        185,
+areiaNat:    255,
+areiaArt:    0,
+brita:       689,     // A A Britagem
+tipoBrita:   “brita0”, // Brita 12,5 mm
+pedrisco:    162,
+aditivoPla:  1.85,
+aditivoRet:  0,
+slump:       12,
+obs:         “Concreto de Enchimento e Regularização; Barragem e Muro de Gravidade. Dmáx 12,5mm. A/Ceq=0,80. Massa unitária: 2.438 kg/m³”,
+},
+{
+codigo:      “9.28 ARGAM”,
+classe:      “C”,
+fck:         9,
+tipoCimento: “CP IV 32 - Votoran”,
+dmaxMm:      4.8,
+acEq:        0.80,
+cimento:     373,
+agua:        299,
+areiaNat:    412,
+areiaArt:    0,
+brita:       1114,    // A A Britagem
+tipoBrita:   “brita0”,
+pedrisco:    0,
+aditivoPla:  2.98,
+aditivoRet:  0,
+slump:       0,       // FLUIDO
+obs:         “Argamassa / Concreto Fluido. Dmáx 4,8mm. A/Ceq=0,80. Slump: FLUIDO. Massa unitária: 2.198 kg/m³”,
+},
+{
+codigo:      “20.28.1.B.00”,
+classe:      “B”,
+fck:         20,
+tipoCimento: “CP IV 32 - Votoran”,
+dmaxMm:      12.5,
+acEq:        0.57,
+cimento:     325,
+agua:        185,
+areiaNat:    244,
+areiaArt:    0,
+brita:       658,     // Brita 12,5 mm
+tipoBrita:   “brita0”,
+pedrisco:    155,
+aditivoPla:  2.59,
+aditivoRet:  0,
+slump:       12,
+obs:         “Base de Subestação, Blocos de ancoragem, Fundação em geral. Dmáx 12,5mm. A/Ceq=0,57. Massa unitária: 2.443 kg/m³”,
+},
+];
 
-  let importados = 0, pulados = 0;
-  for(const t of tracos) {
-    // Verificar se já existe pelo código
-    const existe = tracosCache.find(x => x.codigo === t.codigo);
-    if(existe) { pulados++; continue; }
-    try {
-      await addDoc(collection(db, COL_TRACOS), {
-        codigo:      t.codigo,
-        fck:         t.fck,
-        cimento:     t.cimento,
-        areiaNat:    t.areiaNat,
-        areiaArt:    t.areiaArt,
-        brita:       t.brita,
-        tipoBrita:   t.tipoBrita,
-        pedrisco:    t.pedrisco,
-        agua:        t.agua,
-        aditivoPla:  t.aditivoPla,
-        aditivoRet:  t.aditivoRet,
-        slump:       t.slump,
-        tipoCimento: t.tipoCimento,
-        obs:         t.obs,
-        createdAt:   serverTimestamp(),
-        updatedAt:   serverTimestamp(),
-      });
-      importados++;
-    } catch(e) {
-      showToast("Erro ao importar " + t.codigo + ": " + e.message, true);
-    }
-  }
-  const msg = [];
-  if(importados) msg.push(importados + " traço(s) importado(s)!");
-  if(pulados)    msg.push(pulados + " já existia(m), pulado(s).");
-  showToast(msg.join(" "));
-  loadTracos();
+let importados = 0, pulados = 0;
+for(const t of tracos) {
+// Verificar se já existe pelo código
+const existe = tracosCache.find(x => x.codigo === t.codigo);
+if(existe) { pulados++; continue; }
+try {
+await addDoc(collection(db, COL_TRACOS), {
+codigo:      t.codigo,
+fck:         t.fck,
+cimento:     t.cimento,
+areiaNat:    t.areiaNat,
+areiaArt:    t.areiaArt,
+brita:       t.brita,
+tipoBrita:   t.tipoBrita,
+pedrisco:    t.pedrisco,
+agua:        t.agua,
+aditivoPla:  t.aditivoPla,
+aditivoRet:  t.aditivoRet,
+slump:       t.slump,
+tipoCimento: t.tipoCimento,
+obs:         t.obs,
+createdAt:   serverTimestamp(),
+updatedAt:   serverTimestamp(),
+});
+importados++;
+} catch(e) {
+showToast(“Erro ao importar “ + t.codigo + “: “ + e.message, true);
+}
+}
+const msg = [];
+if(importados) msg.push(importados + “ traço(s) importado(s)!”);
+if(pulados)    msg.push(pulados + “ já existia(m), pulado(s).”);
+showToast(msg.join(” “));
+loadTracos();
 }
 
-document.getElementById("r-ini").value = new Date(new Date().setDate(1)).toISOString().split("T")[0];
-document.getElementById("r-fim").value = today();
+document.getElementById(“r-ini”).value = new Date(new Date().setDate(1)).toISOString().split(“T”)[0];
+document.getElementById(“r-fim”).value = today();
 initApp();
 </script>
 
