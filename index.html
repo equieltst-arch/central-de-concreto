@@ -98,7 +98,7 @@
   .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .6s linear infinite; margin-right: 6px; vertical-align: middle; }
   @keyframes spin { to { transform: rotate(360deg); } }
 </style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
 </head>
 <body>
 <div id="app">
@@ -331,6 +331,26 @@
     <div class="modal-footer">
       <button class="btn btn-secondary" onclick="closeModal('modal-betonada')">Cancelar</button>
       <button class="btn btn-primary" onclick="salvarBetonada()">Registrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL EDITAR TÉRMINO -->
+
+<div class="modal-overlay" id="modal-termino">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-title">Registrar Término</div>
+    <input type="hidden" id="term-id">
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:16px;">
+      <div id="term-info" style="font-size:13px;color:var(--text-dim);margin-bottom:12px;"></div>
+      <div class="grid-2">
+        <div class="form-group" style="margin-bottom:0"><label>Data Término *</label><input type="date" id="term-data-fim"></div>
+        <div class="form-group" style="margin-bottom:0"><label>Hora Término *</label><input type="time" id="term-hora-fim"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-termino')">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarTermino()">Salvar Término</button>
     </div>
   </div>
 </div>
@@ -710,14 +730,17 @@ window.loadBetonadas = async function() {
     tbody.innerHTML += `<tr>
       <td><strong>${b.liberacao||"—"}</strong></td>
       <td>${fmtDT(dt,b.hora)}</td>
-      <td>${fmtDT(b.dataFim||dt,b.horaFim)||"—"}</td>
+      <td>${b.dataFim ? fmtDT(b.dataFim,b.horaFim) : '<span style="color:var(--accent);font-size:11px;">⏳ pendente</span>'}</td>
       <td><strong>${tr ? tr.codigo : "—"}</strong></td>
       <td style="color:var(--accent);font-weight:600">${fmt(b.volume)} m³</td>
       <td>${b.local||"—"}</td>
       <td>${b.descricao||"—"}</td>
       <td>${b.operador||"—"}</td>
       <td>${b.cp==="sim"?'<span class="badge badge-green">Sim</span>':'<span class="badge badge-red">Não</span>'}</td>
-      <td><button class="btn btn-danger btn-sm" onclick="excluirBetonada('${b.id}')">🗑</button></td>
+      <td style="white-space:nowrap;">
+        ${!b.dataFim ? `<button class="btn btn-secondary btn-sm" onclick="abrirTermino('${b.id}')" title="Registrar término" style="margin-right:4px;">⏱</button>` : ""}
+        <button class="btn btn-danger btn-sm" onclick="excluirBetonada('${b.id}')">🗑</button>
+      </td>
     </tr>`;
   });
   document.getElementById("bet-totais").innerHTML = count
@@ -944,10 +967,189 @@ window.gerarRelatorio = async function() {
 
 // ── CSV
 window.exportarBetonadas = async function() {
-  showToast("Gerando planilha...");
-  const snap = await getDocs(query(collection(db,COL_BETONADAS), orderBy("data","desc")));
-  const wb = XLSX.utils.book_new();
-  const ws = {};
+  showToast("Gerando planilha Excel...");
+  const snap = await getDocs(query(collection(db, COL_BETONADAS), orderBy("data","desc")));
+
+  const wb = new ExcelJS.Workbook();
+  wb.creator  = "Central de Concreto PCH Lebon Régis";
+  wb.created  = new Date();
+  const ws    = wb.addWorksheet("Betonadas", { views:[{state:"frozen",ySplit:6}] });
+
+  // ── CORES
+  const AZUL_ESC  = "1A3A6B";
+  const AZUL_MED  = "2755A5";
+  const AZUL_CLAR = "D6E4F7";
+  const BRANCO    = "FFFFFF";
+  const AMARELO   = "F5C518";
+  const CINZA     = "EEF2F7";
+  const CINZA_BRD = "BDC7D8";
+
+  // ── LARGURAS
+  ws.columns = [
+    {width:14},{width:13},{width:11},{width:13},{width:11},
+    {width:18},{width:8}, {width:9}, {width:22},{width:26},
+    {width:14},{width:6}, {width:13},{width:22}
+  ];
+  const NC = 14;
+
+  const bdr = (cor=CINZA_BRD, est="thin") => ({
+    top:{style:est,color:{argb:"FF"+cor}}, bottom:{style:est,color:{argb:"FF"+cor}},
+    left:{style:est,color:{argb:"FF"+cor}}, right:{style:est,color:{argb:"FF"+cor}}
+  });
+  const bdrHdr = () => ({
+    top:{style:"medium",color:{argb:"FF"+AZUL_ESC}},
+    bottom:{style:"medium",color:{argb:"FF"+AZUL_ESC}},
+    left:{style:"medium",color:{argb:"FF"+AZUL_ESC}},
+    right:{style:"thin",color:{argb:"FF"+AZUL_MED}}
+  });
+  const fillSolid = cor => ({type:"pattern",pattern:"solid",fgColor:{argb:"FF"+cor}});
+  const aln = (h="center",v="middle",wrap=false) => ({horizontal:h,vertical:v,wrapText:wrap});
+
+  // ── HELPERS para estilizar linha inteira
+  const styleRow = (row, bg, fgCor, bold, sz, border, hAlign="center") => {
+    row.eachCell({includeEmpty:true}, c => {
+      c.fill      = fillSolid(bg);
+      c.font      = {name:"Calibri", bold, size:sz, color:{argb:"FF"+fgCor}};
+      c.alignment = aln(hAlign,"middle");
+      if(border) c.border = border;
+    });
+  };
+
+  // ── LINHA 1 — Empresa
+  ws.getRow(1).height = 32;
+  ws.mergeCells(1,1,1,NC);
+  const r1 = ws.getRow(1);
+  r1.getCell(1).value     = "BUCAGRANS CONSTRUTORA DE OBRAS S.A";
+  r1.getCell(1).font      = {name:"Calibri",bold:true,size:16,color:{argb:"FF"+BRANCO}};
+  r1.getCell(1).fill      = fillSolid("0D2149");
+  r1.getCell(1).alignment = aln("center","middle");
+
+  // ── LINHA 2 — Projeto
+  ws.getRow(2).height = 20;
+  ws.mergeCells(2,1,2,NC);
+  const r2 = ws.getRow(2);
+  r2.getCell(1).value     = "PCH LEBON RÉGIS  —  LABORATÓRIO DE CONTROLE DE CONCRETO";
+  r2.getCell(1).font      = {name:"Calibri",bold:true,size:11,color:{argb:"FF"+BRANCO}};
+  r2.getCell(1).fill      = fillSolid(AZUL_MED);
+  r2.getCell(1).alignment = aln("center","middle");
+
+  // ── LINHA 3 — Título
+  ws.getRow(3).height = 18;
+  ws.mergeCells(3,1,3,NC);
+  const r3 = ws.getRow(3);
+  r3.getCell(1).value     = "RELATÓRIO DE BETONADAS";
+  r3.getCell(1).font      = {name:"Calibri",bold:true,size:11,color:{argb:"FF"+AMARELO}};
+  r3.getCell(1).fill      = fillSolid(AZUL_MED);
+  r3.getCell(1).alignment = aln("center","middle");
+
+  // ── LINHA 4 — Gerado em
+  ws.getRow(4).height = 14;
+  ws.mergeCells(4,1,4,NC);
+  const hoje = new Date().toLocaleDateString("pt-BR");
+  const r4   = ws.getRow(4);
+  r4.getCell(1).value     = `Gerado em: ${hoje}                                                                  by Equiel`;
+  r4.getCell(1).font      = {name:"Calibri",size:8,italic:true,color:{argb:"FF888888"}};
+  r4.getCell(1).fill      = fillSolid(CINZA);
+  r4.getCell(1).alignment = aln("right","middle");
+
+  // ── LINHA 5 — espaço
+  ws.getRow(5).height = 5;
+  ws.mergeCells(5,1,5,NC);
+  ws.getRow(5).getCell(1).fill = fillSolid(CINZA);
+
+  // ── LINHA 6 — Cabeçalhos
+  ws.getRow(6).height = 36;
+  const headers = [
+    "Nº Liberação","Data Início","Hora Início","Data Término","Hora Término",
+    "Traço","Fck
+(MPa)","Volume
+(m³)","Local / Estrutura",
+    "Descrição do Serviço","Operador","CP?","Nº CP","Observações"
+  ];
+  headers.forEach((h,i) => {
+    const c = ws.getRow(6).getCell(i+1);
+    c.value     = h;
+    c.font      = {name:"Calibri",bold:true,size:10,color:{argb:"FF"+BRANCO}};
+    c.fill      = fillSolid(AZUL_ESC);
+    c.alignment = aln("center","middle",true);
+    c.border    = bdrHdr();
+  });
+
+  // ── DADOS
+  const fD = v => v ? v.split("-").reverse().join("/") : "";
+  let count=0, totalVol=0, dataRow=7;
+  snap.forEach(d => {
+    const b   = d.data();
+    const t   = tracosCache.find(x => x.id===b.tracoid);
+    const par = count%2===0;
+    const bg  = par ? AZUL_CLAR : BRANCO;
+    const vals = [
+      b.liberacao||"",  fD(b.data),  b.hora||"",
+      fD(b.dataFim||""), b.horaFim||"",
+      t?t.codigo:"—",   t?t.fck:"",
+      parseFloat(b.volume)||0,
+      b.local||"",      b.descricao||"",
+      b.operador||"",   b.cp==="sim"?"SIM":"NÃO",
+      b.cpId||"",       b.obs||""
+    ];
+    const row = ws.getRow(dataRow+count);
+    row.height = 18;
+    vals.forEach((v,i) => {
+      const c   = row.getCell(i+1);
+      c.value   = v;
+      c.fill    = fillSolid(bg);
+      c.border  = bdr(CINZA_BRD,"hair");
+      c.alignment = aln("center","middle");
+      c.font    = {name:"Calibri",size:9,bold:i===0,color:{argb:"FF"+(i===0?AZUL_ESC:"1A1A1A")}};
+    });
+    totalVol += parseFloat(b.volume)||0;
+    count++;
+  });
+
+  // ── TOTAL
+  const totRow = dataRow+count;
+  ws.getRow(totRow).height = 22;
+  ws.mergeCells(totRow,1,totRow,6);
+  for(let col=1;col<=NC;col++){
+    const c=ws.getRow(totRow).getCell(col);
+    c.fill   = fillSolid(AZUL_ESC);
+    c.border = bdr(AZUL_MED,"thin");
+  }
+  const cTot=ws.getRow(totRow).getCell(1);
+  cTot.value     = `TOTAL  —  ${count} betonada(s)`;
+  cTot.font      = {name:"Calibri",bold:true,size:11,color:{argb:"FF"+BRANCO}};
+  cTot.alignment = aln("center","middle");
+  const cVol=ws.getRow(totRow).getCell(8);
+  cVol.value     = parseFloat(totalVol.toFixed(2));
+  cVol.font      = {name:"Calibri",bold:true,size:12,color:{argb:"FF"+AMARELO}};
+  cVol.alignment = aln("center","middle");
+  cVol.numFmt    = "0.00";
+  ws.getRow(totRow).getCell(7).value = "m³";
+  ws.getRow(totRow).getCell(7).font  = {name:"Calibri",bold:true,size:9,color:{argb:"FF"+AMARELO}};
+  ws.getRow(totRow).getCell(7).alignment = aln("center","middle");
+
+  // ── RODAPÉ
+  const rodRow = totRow+2;
+  ws.getRow(rodRow).height = 14;
+  ws.mergeCells(rodRow,1,rodRow,NC);
+  const cRod = ws.getRow(rodRow).getCell(1);
+  cRod.value     = "Documento gerado automaticamente pelo Sistema Central de Concreto — PCH Lebon Régis  |  by Equiel";
+  cRod.font      = {name:"Calibri",size:8,italic:true,color:{argb:"FFAAAAAA"}};
+  cRod.fill      = fillSolid("F9FAFB");
+  cRod.alignment = aln("left","middle");
+
+  // ── FILTRO AUTOMÁTICO
+  ws.autoFilter = { from:{row:6,column:1}, to:{row:6,column:NC} };
+
+  // ── DOWNLOAD
+  const buf  = await wb.xlsx.writeBuffer();
+  const blob = new Blob([buf], {type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
+  const a    = document.createElement("a");
+  a.href     = URL.createObjectURL(blob);
+  a.download = "Betonadas_PCH_"+new Date().toISOString().slice(0,10)+".xlsx";
+  a.click();
+  showToast("✅ Planilha Excel gerada!");
+};
   const ref = {s:{r:0,c:0},e:{r:0,c:0}};
   const AZUL_ESC="1A3A6B", AZUL_MED="2755A5", AZUL_CLAR="D6E4F7", BRANCO="FFFFFF", AMARELO="F5C518", CINZA="F2F2F2";
 
