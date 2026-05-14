@@ -88,8 +88,9 @@
   /* ── IMPRESSÃO ── */
   .print-only { display: none; }
   @media print {
+    @page { size: A4 landscape; margin: 12mm 10mm; }
     * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-    body { background: #fff !important; color: #111 !important; font-family: Arial, sans-serif !important; font-size: 10pt; }
+    body { background: #fff !important; color: #111 !important; font-family: Arial, sans-serif !important; font-size: 9pt; }
     #app { display: block !important; height: auto !important; }
     .topbar, .nav-tabs { display: none !important; }
     .main { padding: 0 !important; overflow: visible !important; }
@@ -98,18 +99,25 @@
     .section-header { display: none !important; }
     .print-only { display: block !important; }
     .no-print { display: none !important; }
-    .card { background: #fff !important; border: 1px solid #ccc !important; border-radius: 3px !important; padding: 12px !important; margin-bottom: 10px !important; break-inside: avoid; box-shadow: none !important; }
-    .card-title { color: #1A3A6B !important; border-bottom: 2px solid #1A3A6B !important; padding-bottom: 5px; margin-bottom: 8px; font-size: 11pt; background: none !important; }
-    .grid-2 { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 12px !important; }
-    table { font-size: 9pt; }
-    thead th { background: #1A3A6B !important; color: #fff !important; padding: 5px 8px !important; font-size: 9pt !important; }
+    .card { background: #fff !important; border: 1px solid #ccc !important; border-radius: 3px !important; padding: 10px !important; margin-bottom: 10px !important; break-inside: avoid; box-shadow: none !important; }
+    #card-rel-betonadas { break-inside: auto; }
+    .card-title { color: #1A3A6B !important; border-bottom: 2px solid #1A3A6B !important; padding-bottom: 4px; margin-bottom: 8px; font-size: 10pt; background: none !important; }
+    .grid-2 { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 10px !important; }
+    table { font-size: 8pt; width: 100%; }
+    thead th { background: #1A3A6B !important; color: #fff !important; padding: 4px 6px !important; font-size: 8pt !important; white-space: nowrap; }
     tbody tr:nth-child(even) td { background: #EEF4FB !important; }
-    tbody td { padding: 4px 8px !important; border-bottom: 1px solid #ddd !important; color: #111 !important; }
+    tbody td { padding: 3px 6px !important; border-bottom: 1px solid #ddd !important; color: #111 !important; }
     tbody tr { border-bottom: none !important; }
     tbody tr:hover { background: none !important; }
+    tbody tr:last-child td { background: #1A3A6B !important; color: #fff !important; font-weight: bold; }
     .inline-row { display: none !important; }
     #rel-consumo-mat div { border-bottom: 1px solid #ddd !important; color: #111 !important; }
-    #rel-consumo-mat span:last-child { color: #1A3A6B !important; }
+    #rel-consumo-mat span:last-child { color: #1A3A6B !important; font-weight: bold; }
+    .badge { border-radius: 3px; padding: 1px 4px; font-size: 7pt; }
+    .badge-green { background: #d4edda !important; color: #155724 !important; }
+    .badge-red   { background: #f8d7da !important; color: #721c24 !important; }
+    #rel-totais-bet { font-size: 9pt; color: #333 !important; }
+    #rel-totais-bet strong { color: #1A3A6B !important; }
   }
 </style>
 </head>
@@ -253,6 +261,34 @@
         <div class="card">
           <div class="card-title">Consumo de Materiais (Período)</div>
           <div id="rel-consumo-mat"></div>
+        </div>
+      </div>
+
+      <!-- Tabela de betonadas do período -->
+      <div class="card" id="card-rel-betonadas" style="display:none;">
+        <div class="card-title">Registro de Betonadas do Período</div>
+        <div id="rel-totais-bet" style="margin-bottom:12px;"></div>
+        <div class="table-wrap">
+          <table id="rel-betonadas-table">
+            <thead>
+              <tr>
+                <th>Nº Lib.</th>
+                <th>Data Início</th>
+                <th>Hora Início</th>
+                <th>Data Término</th>
+                <th>Hora Término</th>
+                <th>Traço</th>
+                <th>Vol (m³)</th>
+                <th>Local / Estrutura</th>
+                <th>Descrição do Serviço</th>
+                <th>Operador</th>
+                <th>CP?</th>
+                <th>Nº CP</th>
+                <th>Observações</th>
+              </tr>
+            </thead>
+            <tbody id="rel-betonadas-tbody"></tbody>
+          </table>
         </div>
       </div>
 
@@ -901,12 +937,15 @@ window.gerarRelatorio = async function() {
   const porTraco={};
   let totalVol=0;
   const consumoMat={};
+  const betonadas=[];
+
   snap.forEach(d => {
-    const b = d.data();
+    const b = { id:d.id, ...d.data() };
     if(ini && b.data < ini) return;
     if(fim && b.data > fim) return;
     const vol = parseFloat(b.volume)||0;
     totalVol += vol;
+    betonadas.push(b);
     if(!porTraco[b.tracoid]) porTraco[b.tracoid]={count:0,vol:0};
     porTraco[b.tracoid].count++;
     porTraco[b.tracoid].vol += vol;
@@ -920,6 +959,8 @@ window.gerarRelatorio = async function() {
       if(t.aditivoPla) consumoMat["aditivo_pla"] = (consumoMat["aditivo_pla"]||0)+t.aditivoPla*vol;
     }
   });
+
+  // ── Resumo por traço
   const div1 = document.getElementById("rel-por-traco");
   if(!Object.keys(porTraco).length) { div1.innerHTML='<div class="empty">Nenhum dado no período.</div>'; }
   else {
@@ -931,6 +972,8 @@ window.gerarRelatorio = async function() {
       `<tr style="font-weight:600;border-top:2px solid #ccc"><td>TOTAL</td><td>${Object.values(porTraco).reduce((a,b)=>a+b.count,0)}</td><td>${fmt(totalVol)}</td><td>100%</td></tr>`+
       `</tbody></table>`;
   }
+
+  // ── Consumo de materiais
   const div2 = document.getElementById("rel-consumo-mat");
   div2.innerHTML = Object.entries(consumoMat).map(([k,v]) => {
     const m = MATERIAIS.find(x => x.id===k);
@@ -939,6 +982,46 @@ window.gerarRelatorio = async function() {
       <span style="font-family:var(--font-head);font-weight:700;color:var(--accent)">${fmt(v,0)} kg</span>
     </div>`;
   }).join("") || '<div class="empty">Sem dados.</div>';
+
+  // ── Tabela de betonadas
+  const cardBet  = document.getElementById("card-rel-betonadas");
+  const tbody    = document.getElementById("rel-betonadas-tbody");
+  const totaisEl = document.getElementById("rel-totais-bet");
+
+  if(!betonadas.length) {
+    cardBet.style.display = "none";
+  } else {
+    cardBet.style.display = "block";
+    const fmtD = v => v ? v.split("-").reverse().join("/") : "—";
+    tbody.innerHTML = betonadas.map((b, i) => {
+      const t   = tracosCache.find(x => x.id === b.tracoid);
+      const par = i % 2 === 0;
+      return `<tr style="${par?"":"background:var(--surface2)"}">
+        <td><strong>${b.liberacao||"—"}</strong></td>
+        <td>${fmtD(b.data)}</td>
+        <td>${b.hora||"—"}</td>
+        <td>${fmtD(b.dataFim)}</td>
+        <td>${b.horaFim||"—"}</td>
+        <td><strong>${t?t.codigo:"—"}</strong></td>
+        <td style="color:var(--accent);font-weight:600;text-align:center">${fmt(b.volume)} m³</td>
+        <td>${b.local||"—"}</td>
+        <td>${b.descricao||"—"}</td>
+        <td>${b.operador||"—"}</td>
+        <td style="text-align:center">${b.cp==="sim"?'<span class="badge badge-green">Sim</span>':'<span class="badge badge-red">Não</span>'}</td>
+        <td>${b.cpId||"—"}</td>
+        <td style="max-width:140px;white-space:normal;font-size:12px;color:var(--text-dim)">${b.obs||"—"}</td>
+      </tr>`;
+    }).join("") +
+    `<tr style="font-weight:700;border-top:2px solid var(--border);background:var(--surface)">
+      <td colspan="6" style="text-align:right;padding-right:8px;">TOTAL</td>
+      <td style="color:var(--accent);font-weight:800;text-align:center">${fmt(totalVol)} m³</td>
+      <td colspan="6" style="color:var(--text-dim);font-size:12px;">${betonadas.length} betonada(s)</td>
+    </tr>`;
+    totaisEl.innerHTML = `<div style="display:flex;gap:24px;font-family:var(--font-head);font-size:15px;color:var(--text-dim);">
+      <span>Total de betonadas: <strong style="color:var(--text)">${betonadas.length}</strong></span>
+      <span>Volume total: <strong style="color:var(--accent)">${fmt(totalVol)} m³</strong></span>
+    </div>`;
+  }
 };
 
 // ── IMPRIMIR EM PDF
