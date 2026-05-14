@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -8,29 +7,17 @@
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0f1117;
-    --surface: #181c26;
-    --surface2: #1f2535;
-    --border: #2a3045;
-    --accent: #e8a020;
-    --accent2: #f0c060;
-    --red: #e05050;
-    --green: #3ec47a;
-    --blue: #4a9eff;
-    --text: #e8eaf0;
-    --text-dim: #8890a8;
-    --text-muted: #4a5068;
-    --font-head: 'Barlow Condensed', sans-serif;
-    --font-body: 'Barlow', sans-serif;
-    --radius: 8px;
-    --shadow: 0 4px 24px rgba(0,0,0,0.4);
+    --bg: #0f1117; --surface: #181c26; --surface2: #1f2535; --border: #2a3045;
+    --accent: #e8a020; --accent2: #f0c060; --red: #e05050; --green: #3ec47a;
+    --blue: #4a9eff; --text: #e8eaf0; --text-dim: #8890a8; --text-muted: #4a5068;
+    --font-head: 'Barlow Condensed', sans-serif; --font-body: 'Barlow', sans-serif;
+    --radius: 8px; --shadow: 0 4px 24px rgba(0,0,0,0.4);
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--font-body); font-size: 14px; }
   #app { display: flex; height: 100vh; flex-direction: column; }
   .topbar { display: flex; align-items: center; gap: 16px; padding: 0 24px; height: 52px; background: var(--surface); border-bottom: 1px solid var(--border); flex-shrink: 0; }
   .topbar-logo { font-family: var(--font-head); font-size: 20px; font-weight: 800; color: var(--accent); letter-spacing: 1px; white-space: nowrap; }
-  .topbar-title { font-size: 12px; color: var(--text-dim); text-transform: uppercase; letter-spacing: .8px; flex: 1; }
   .nav-tabs { display: flex; gap: 2px; padding: 0 24px; background: var(--surface); border-bottom: 2px solid var(--border); flex-shrink: 0; }
   .nav-tab { padding: 10px 20px; font-family: var(--font-head); font-size: 14px; font-weight: 600; letter-spacing: .5px; text-transform: uppercase; color: var(--text-dim); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all .2s; white-space: nowrap; background: none; border-top: none; border-left: none; border-right: none; }
   .nav-tab:hover { color: var(--text); }
@@ -97,11 +84,39 @@
   .divider { height: 1px; background: var(--border); margin: 20px 0; }
   .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .6s linear infinite; margin-right: 6px; vertical-align: middle; }
   @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── IMPRESSÃO ── */
+  .print-only { display: none; }
+  @media print {
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+    body { background: #fff !important; color: #111 !important; font-family: Arial, sans-serif !important; font-size: 10pt; }
+    #app { display: block !important; height: auto !important; }
+    .topbar, .nav-tabs { display: none !important; }
+    .main { padding: 0 !important; overflow: visible !important; }
+    .page { display: none !important; }
+    #page-relatorios { display: block !important; }
+    .section-header { display: none !important; }
+    .print-only { display: block !important; }
+    .no-print { display: none !important; }
+    .card { background: #fff !important; border: 1px solid #ccc !important; border-radius: 3px !important; padding: 12px !important; margin-bottom: 10px !important; break-inside: avoid; box-shadow: none !important; }
+    .card-title { color: #1A3A6B !important; border-bottom: 2px solid #1A3A6B !important; padding-bottom: 5px; margin-bottom: 8px; font-size: 11pt; background: none !important; }
+    .grid-2 { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 12px !important; }
+    table { font-size: 9pt; }
+    thead th { background: #1A3A6B !important; color: #fff !important; padding: 5px 8px !important; font-size: 9pt !important; }
+    tbody tr:nth-child(even) td { background: #EEF4FB !important; }
+    tbody td { padding: 4px 8px !important; border-bottom: 1px solid #ddd !important; color: #111 !important; }
+    tbody tr { border-bottom: none !important; }
+    tbody tr:hover { background: none !important; }
+    .inline-row { display: none !important; }
+    #rel-consumo-mat div { border-bottom: 1px solid #ddd !important; color: #111 !important; }
+    #rel-consumo-mat span:last-child { color: #1A3A6B !important; }
+  }
 </style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
 <div id="app">
+
+  <!-- TOPBAR -->
   <div class="topbar">
     <div style="display:flex;flex-direction:column;line-height:1.1;">
       <div class="topbar-logo">⬡ CENTRAL DE CONCRETO</div>
@@ -112,6 +127,8 @@
     </div>
     <div style="font-size:9px;color:var(--text-muted);letter-spacing:.3px;align-self:flex-end;padding-bottom:2px;">by Equiel</div>
   </div>
+
+  <!-- NAV -->
   <div class="nav-tabs">
     <button class="nav-tab active" onclick="showPage('dashboard')">Dashboard</button>
     <button class="nav-tab" onclick="showPage('tracos')">Traços / Dosagens</button>
@@ -119,128 +136,148 @@
     <button class="nav-tab" onclick="showPage('estoque')">Estoque</button>
     <button class="nav-tab" onclick="showPage('relatorios')">Relatórios</button>
   </div>
+
   <div class="main">
 
-```
-<!-- DASHBOARD -->
-<div class="page active" id="page-dashboard">
-  <div class="section-header">
-    <div class="section-title">Dashboard <span>Geral</span></div>
-    <button class="btn btn-secondary" onclick="loadDashboard()">↻ Atualizar</button>
-  </div>
-  <div class="grid-4">
-    <div class="stat-card"><div class="stat-label">Betonadas Hoje</div><div class="stat-value" id="d-betHoje">—</div></div>
-    <div class="stat-card"><div class="stat-label">Volume Hoje (m³)</div><div class="stat-value" id="d-volHoje">—</div></div>
-    <div class="stat-card"><div class="stat-label">Traços Cadastrados</div><div class="stat-value" id="d-tracos">—</div></div>
-    <div class="stat-card"><div class="stat-label">Alertas Estoque</div><div class="stat-value" id="d-alertas" style="color:var(--red)">—</div></div>
-  </div>
-  <div class="divider"></div>
-  <div class="grid-2">
-    <div class="card"><div class="card-title">Estoque Atual</div><div id="dash-estoque-list"><div class="empty"><span class="spinner"></span> Carregando...</div></div></div>
-    <div class="card"><div class="card-title">Últimas Betonadas</div><div id="dash-bet-list"><div class="empty"><span class="spinner"></span> Carregando...</div></div></div>
-  </div>
-</div>
-
-<!-- TRAÇOS -->
-<div class="page" id="page-tracos">
-  <div class="section-header">
-    <div class="section-title">Traços / <span>Dosagens</span></div>
-    <div style="display:flex;gap:8px;">
-      <button class="btn btn-secondary" id="btn-importar-tracos">⬇ Importar Tabela PCH</button>
-      <button class="btn btn-primary" id="btn-novo-traco">+ Novo Traço</button>
-    </div>
-  </div>
-  <div class="card">
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>Código</th><th>Fck (MPa)</th><th>Cimento (kg/m³)</th><th>Areia (kg/m³)</th><th>Brita (kg/m³)</th><th>Água (L/m³)</th><th>Aditivo (kg/m³)</th><th>Slump (cm)</th><th>Ações</th></tr></thead>
-        <tbody id="tracos-tbody"><tr><td colspan="9" class="empty">Carregando...</td></tr></tbody>
-      </table>
-    </div>
-  </div>
-</div>
-
-<!-- BETONADAS -->
-<div class="page" id="page-betonadas">
-  <div class="section-header">
-    <div class="section-title">Controle de <span>Betonadas</span></div>
-    <button class="btn btn-primary" id="btn-nova-betonada">+ Registrar Betonada</button>
-  </div>
-  <div class="card" style="padding:14px 16px; margin-bottom:12px;">
-    <div class="inline-row">
-      <div class="form-group" style="max-width:150px"><label>Data Início</label><input type="date" id="f-bet-ini"></div>
-      <div class="form-group" style="max-width:150px"><label>Data Fim</label><input type="date" id="f-bet-fim"></div>
-      <div class="form-group" style="max-width:180px"><label>Traço</label><select id="f-bet-traco"><option value="">Todos</option></select></div>
-      <div style="display:flex;gap:8px;align-items:flex-end;">
-        <button class="btn btn-secondary" onclick="loadBetonadas()">Filtrar</button>
-        <button class="btn btn-secondary" onclick="clearFiltrosBetonadas()">Limpar</button>
+    <!-- DASHBOARD -->
+    <div class="page active" id="page-dashboard">
+      <div class="section-header">
+        <div class="section-title">Dashboard <span>Geral</span></div>
+        <button class="btn btn-secondary" onclick="loadDashboard()">↻ Atualizar</button>
+      </div>
+      <div class="grid-4">
+        <div class="stat-card"><div class="stat-label">Betonadas Hoje</div><div class="stat-value" id="d-betHoje">—</div></div>
+        <div class="stat-card"><div class="stat-label">Volume Hoje (m³)</div><div class="stat-value" id="d-volHoje">—</div></div>
+        <div class="stat-card"><div class="stat-label">Traços Cadastrados</div><div class="stat-value" id="d-tracos">—</div></div>
+        <div class="stat-card"><div class="stat-label">Alertas Estoque</div><div class="stat-value" id="d-alertas" style="color:var(--red)">—</div></div>
+      </div>
+      <div class="divider"></div>
+      <div class="grid-2">
+        <div class="card"><div class="card-title">Estoque Atual</div><div id="dash-estoque-list"><div class="empty"><span class="spinner"></span> Carregando...</div></div></div>
+        <div class="card"><div class="card-title">Últimas Betonadas</div><div id="dash-bet-list"><div class="empty"><span class="spinner"></span> Carregando...</div></div></div>
       </div>
     </div>
-  </div>
-  <div class="card">
-    <div id="bet-totais" style="margin-bottom:12px;"></div>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>Nº Lib.</th><th>Início</th><th>Término</th><th>Traço</th><th>Vol (m³)</th><th>Local</th><th>Descrição</th><th>Operador</th><th>CP?</th><th>Ações</th></tr></thead>
-        <tbody id="betonadas-tbody"><tr><td colspan="8" class="empty">Carregando...</td></tr></tbody>
-      </table>
-    </div>
-  </div>
-</div>
 
-<!-- ESTOQUE -->
-<div class="page" id="page-estoque">
-  <div class="section-header">
-    <div class="section-title">Estoque de <span>Materiais</span></div>
-    <button class="btn btn-primary" id="btn-nova-mov">+ Movimentação</button>
-  </div>
-  <div id="estoque-alerts"></div>
-  <div class="grid-3" id="estoque-cards"><div class="stat-card"><span class="spinner"></span> Carregando...</div></div>
-  <div class="divider"></div>
-  <div class="card">
-    <div class="card-title">Histórico de Movimentações</div>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>Data</th><th>Material</th><th>Tipo</th><th>Qtd (kg/L)</th><th>Nota/Ref.</th><th>Responsável</th><th>Obs</th></tr></thead>
-        <tbody id="movimentacoes-tbody"><tr><td colspan="7" class="empty">Carregando...</td></tr></tbody>
-      </table>
-    </div>
-  </div>
-</div>
-
-<!-- RELATÓRIOS -->
-<div class="page" id="page-relatorios">
-  <div class="section-header"><div class="section-title">Relatórios e <span>Histórico</span></div></div>
-  <div class="grid-2">
-    <div class="card">
-      <div class="card-title">Consumo por Traço</div>
-      <div class="inline-row" style="margin-bottom:16px;">
-        <div class="form-group"><label>Período Início</label><input type="date" id="r-ini"></div>
-        <div class="form-group"><label>Período Fim</label><input type="date" id="r-fim"></div>
-        <div style="display:flex;align-items:flex-end;"><button class="btn btn-secondary" onclick="gerarRelatorio()">Gerar</button></div>
+    <!-- TRAÇOS -->
+    <div class="page" id="page-tracos">
+      <div class="section-header">
+        <div class="section-title">Traços / <span>Dosagens</span></div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-secondary" id="btn-importar-tracos">⬇ Importar Tabela PCH</button>
+          <button class="btn btn-primary" id="btn-novo-traco">+ Novo Traço</button>
+        </div>
       </div>
-      <div id="rel-por-traco"></div>
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Código</th><th>Fck (MPa)</th><th>Cimento (kg/m³)</th><th>Areia (kg/m³)</th><th>Brita (kg/m³)</th><th>Água (L/m³)</th><th>Aditivo (kg/m³)</th><th>Slump (cm)</th><th>Ações</th></tr></thead>
+            <tbody id="tracos-tbody"><tr><td colspan="9" class="empty">Carregando...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
     </div>
-    <div class="card">
-      <div class="card-title">Consumo de Materiais (Período)</div>
-      <div id="rel-consumo-mat"></div>
-    </div>
-  </div>
-  <div class="card">
-    <div class="card-title">Exportar Dados</div>
-    <div style="display:flex;gap:12px;flex-wrap:wrap;">
-      <button class="btn btn-primary" onclick="exportarBetonadas()">📊 Exportar Betonadas Excel</button>
-      <button class="btn btn-secondary" onclick="exportarMovimentacoes()">⬇ Movimentações CSV</button>
-    </div>
-  </div>
-</div>
-```
 
+    <!-- BETONADAS -->
+    <div class="page" id="page-betonadas">
+      <div class="section-header">
+        <div class="section-title">Controle de <span>Betonadas</span></div>
+        <button class="btn btn-primary" id="btn-nova-betonada">+ Registrar Betonada</button>
+      </div>
+      <div class="card" style="padding:14px 16px;margin-bottom:12px;">
+        <div class="inline-row">
+          <div class="form-group" style="max-width:150px"><label>Data Início</label><input type="date" id="f-bet-ini"></div>
+          <div class="form-group" style="max-width:150px"><label>Data Fim</label><input type="date" id="f-bet-fim"></div>
+          <div class="form-group" style="max-width:180px"><label>Traço</label><select id="f-bet-traco"><option value="">Todos</option></select></div>
+          <div style="display:flex;gap:8px;align-items:flex-end;">
+            <button class="btn btn-secondary" onclick="loadBetonadas()">Filtrar</button>
+            <button class="btn btn-secondary" onclick="clearFiltrosBetonadas()">Limpar</button>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div id="bet-totais" style="margin-bottom:12px;"></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Nº Lib.</th><th>Início</th><th>Término</th><th>Traço</th><th>Vol (m³)</th><th>Local</th><th>Descrição</th><th>Operador</th><th>CP?</th><th>Ações</th></tr></thead>
+            <tbody id="betonadas-tbody"><tr><td colspan="8" class="empty">Carregando...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ESTOQUE -->
+    <div class="page" id="page-estoque">
+      <div class="section-header">
+        <div class="section-title">Estoque de <span>Materiais</span></div>
+        <button class="btn btn-primary" id="btn-nova-mov">+ Movimentação</button>
+      </div>
+      <div id="estoque-alerts"></div>
+      <div class="grid-3" id="estoque-cards"><div class="stat-card"><span class="spinner"></span> Carregando...</div></div>
+      <div class="divider"></div>
+      <div class="card">
+        <div class="card-title">Histórico de Movimentações</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Data</th><th>Material</th><th>Tipo</th><th>Qtd (kg/L)</th><th>Nota/Ref.</th><th>Responsável</th><th>Obs</th></tr></thead>
+            <tbody id="movimentacoes-tbody"><tr><td colspan="7" class="empty">Carregando...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- RELATÓRIOS -->
+    <div class="page" id="page-relatorios">
+
+      <!-- Cabeçalho de impressão -->
+      <div class="print-only" style="text-align:center;margin-bottom:18px;padding-bottom:12px;border-bottom:3px solid #1A3A6B;">
+        <div style="font-size:15pt;font-weight:bold;color:#1A3A6B;letter-spacing:1px;">BUCAGRANS CONSTRUTORA DE OBRAS S.A</div>
+        <div style="font-size:11pt;color:#2755A5;margin-top:3px;">PCH LEBON RÉGIS — LABORATÓRIO DE CONTROLE DE CONCRETO</div>
+        <div style="font-size:10pt;font-weight:bold;margin-top:4px;">RELATÓRIO DE CONSUMO DE CONCRETO</div>
+        <div style="font-size:8pt;color:#666;margin-top:5px;" id="print-periodo-label"></div>
+      </div>
+
+      <div class="section-header no-print">
+        <div class="section-title">Relatórios e <span>Histórico</span></div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">Consumo por Traço</div>
+          <div class="inline-row no-print" style="margin-bottom:16px;">
+            <div class="form-group"><label>Período Início</label><input type="date" id="r-ini"></div>
+            <div class="form-group"><label>Período Fim</label><input type="date" id="r-fim"></div>
+            <div style="display:flex;align-items:flex-end;"><button class="btn btn-secondary" onclick="gerarRelatorio()">Gerar</button></div>
+          </div>
+          <div id="rel-por-traco"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Consumo de Materiais (Período)</div>
+          <div id="rel-consumo-mat"></div>
+        </div>
+      </div>
+
+      <!-- Card de impressão -->
+      <div class="card no-print">
+        <div class="card-title">🖨️ Imprimir / Exportar PDF</div>
+        <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;">
+          <button class="btn btn-primary" onclick="imprimirRelatorio()" style="font-size:15px;padding:10px 24px;">🖨️ Imprimir / Salvar como PDF</button>
+          <span style="font-size:12px;color:var(--text-dim);max-width:400px;line-height:1.5;">
+            Primeiro clique em <strong style="color:var(--text)">Gerar</strong> para montar o relatório, depois clique aqui.<br>
+            Na janela do navegador selecione <strong style="color:var(--text)">"Salvar como PDF"</strong> como destino de impressão.
+          </span>
+        </div>
+      </div>
+
+      <!-- Rodapé de impressão -->
+      <div class="print-only" style="margin-top:20px;border-top:1px solid #ccc;padding-top:6px;font-size:8pt;color:#999;text-align:center;">
+        Documento gerado automaticamente pelo Sistema Central de Concreto — PCH Lebon Régis &nbsp;|&nbsp; by Equiel &nbsp;|&nbsp; <span id="print-date-label"></span>
+      </div>
+
+    </div>
   </div>
 </div>
 
 <!-- MODAL TRAÇO -->
-
 <div class="modal-overlay" id="modal-traco">
   <div class="modal">
     <div class="modal-title" id="modal-traco-title">Novo Traço</div>
@@ -287,7 +324,6 @@
 </div>
 
 <!-- MODAL BETONADA -->
-
 <div class="modal-overlay" id="modal-betonada">
   <div class="modal" style="max-width:600px;">
     <div class="modal-title">Registrar Betonada</div>
@@ -336,7 +372,6 @@
 </div>
 
 <!-- MODAL MOVIMENTAÇÃO -->
-
 <div class="modal-overlay" id="modal-movimentacao">
   <div class="modal">
     <div class="modal-title">Movimentação de Estoque</div>
@@ -409,18 +444,17 @@ let tracosCache  = [];
 let estoqueCache = {};
 
 const MATERIAIS = [
-  {id:"cimento",   label:"Cimento",           unit:"kg", min:35000},
-  {id:"areia_nat", label:"Areia Natural",      unit:"kg", min:0},
-  {id:"areia_art", label:"Areia Artificial",   unit:"kg", min:0},
-  {id:"brita0",    label:"Brita 0",            unit:"kg", min:0},
-  {id:"brita1",    label:"Brita 1",            unit:"kg", min:0},
-  {id:"brita2",    label:"Brita 2",            unit:"kg", min:0},
-  {id:"agua",      label:"Água",               unit:"L",  min:0},
-  {id:"aditivo_ret", label:"Aditivo Retardador",   unit:"kg", min:0},
+  {id:"cimento",     label:"Cimento",              unit:"kg", min:35000},
+  {id:"areia_nat",   label:"Areia Natural",         unit:"kg", min:0},
+  {id:"areia_art",   label:"Areia Artificial",      unit:"kg", min:0},
+  {id:"brita0",      label:"Brita 0",               unit:"kg", min:0},
+  {id:"brita1",      label:"Brita 1",               unit:"kg", min:0},
+  {id:"brita2",      label:"Brita 2",               unit:"kg", min:0},
+  {id:"agua",        label:"Água",                  unit:"L",  min:0},
+  {id:"aditivo_ret", label:"Aditivo Retardador",    unit:"kg", min:0},
   {id:"aditivo_pla", label:"Aditivo Plastificante", unit:"kg", min:0},
 ];
 
-// ── UTILITÁRIOS
 window.showToast = function(msg, err=false) {
   const d = document.getElementById("toast");
   const el = document.createElement("div");
@@ -433,14 +467,12 @@ function fmt(n, dec=1) { return (parseFloat(n)||0).toFixed(dec); }
 function today()   { return new Date().toISOString().split("T")[0]; }
 function nowTime() { return new Date().toTimeString().slice(0,5); }
 
-// ── MODAIS
 window.openModal  = id => document.getElementById(id).classList.add("open");
 window.closeModal = id => document.getElementById(id).classList.remove("open");
 document.querySelectorAll(".modal-overlay").forEach(m => {
   m.addEventListener("click", e => { if(e.target === m) m.classList.remove("open"); });
 });
 
-// ── BOTÕES
 document.getElementById("btn-novo-traco").addEventListener("click", () => {
   document.getElementById("modal-traco-title").textContent = "Novo Traço";
   document.getElementById("traco-id").value = "";
@@ -452,33 +484,21 @@ document.getElementById("btn-novo-traco").addEventListener("click", () => {
 });
 
 document.getElementById("btn-nova-betonada").addEventListener("click", () => {
-  document.getElementById("b-liberacao").value = "";
-  document.getElementById("b-data").value      = today();
-  document.getElementById("b-hora").value      = nowTime();
-  document.getElementById("b-data-fim").value  = "";
-  document.getElementById("b-hora-fim").value  = "";
-  document.getElementById("b-traco").value     = "";
-  document.getElementById("b-volume").value    = "";
-  document.getElementById("b-local").value     = "";
-  document.getElementById("b-descricao").value = "";
-  document.getElementById("b-operador").value  = "";
-  document.getElementById("b-cp").value        = "nao";
-  document.getElementById("b-cp-id").value     = "";
-  document.getElementById("b-obs").value       = "";
+  ["b-liberacao","b-data-fim","b-hora-fim","b-volume","b-local","b-descricao","b-operador","b-cp-id","b-obs"].forEach(id => document.getElementById(id).value = "");
+  document.getElementById("b-data").value  = today();
+  document.getElementById("b-hora").value  = nowTime();
+  document.getElementById("b-traco").value = "";
+  document.getElementById("b-cp").value    = "nao";
   document.getElementById("bet-consumo-preview").style.display = "none";
   openModal("modal-betonada");
 });
 
 document.getElementById("btn-nova-mov").addEventListener("click", () => {
   document.getElementById("m-data").value = today();
-  document.getElementById("m-qtd").value  = "";
-  document.getElementById("m-nota").value = "";
-  document.getElementById("m-resp").value = "";
-  document.getElementById("m-obs").value  = "";
+  ["m-qtd","m-nota","m-resp","m-obs"].forEach(id => document.getElementById(id).value = "");
   openModal("modal-movimentacao");
 });
 
-// ── INIT
 async function initApp() {
   try {
     await loadEstoqueCache();
@@ -487,11 +507,9 @@ async function initApp() {
     loadDashboard();
   } catch(e) {
     showToast("Erro ao conectar com Firebase: " + e.message, true);
-    console.error(e);
   }
 }
 
-// ── PÁGINAS
 window.showPage = function(id) {
   document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
   document.querySelectorAll(".nav-tab").forEach(t => t.classList.remove("active"));
@@ -505,7 +523,6 @@ window.showPage = function(id) {
   if(id === "estoque")   loadEstoque();
 };
 
-// ── ESTOQUE CACHE
 async function loadEstoqueCache() {
   const snap = await getDocs(collection(db, COL_ESTOQUE));
   estoqueCache = {};
@@ -513,16 +530,10 @@ async function loadEstoqueCache() {
 }
 
 async function setEstoque(mat, saldo) {
-  try {
-    await setDoc(doc(db, COL_ESTOQUE, mat), { saldo: saldo, mat: mat, updatedAt: serverTimestamp() }, { merge: true });
-    estoqueCache[mat] = saldo;
-  } catch(e) {
-    showToast("Erro ao salvar estoque de " + mat + ": " + e.message, true);
-    throw e;
-  }
+  await setDoc(doc(db, COL_ESTOQUE, mat), { saldo, mat, updatedAt: serverTimestamp() }, { merge: true });
+  estoqueCache[mat] = saldo;
 }
 
-// ── TRAÇOS CACHE
 async function loadTracosCache() {
   const snap = await getDocs(query(collection(db, COL_TRACOS), orderBy("codigo")));
   tracosCache = [];
@@ -540,10 +551,9 @@ function preencherSelectTracos() {
   });
 }
 
-// ── DASHBOARD
 window.loadDashboard = async function() {
   try {
-    const hoje    = new Date(); hoje.setHours(0,0,0,0);
+    const hoje = new Date(); hoje.setHours(0,0,0,0);
     const hojeFim = new Date(); hojeFim.setHours(23,59,59,999);
     const snapBet = await getDocs(query(collection(db, COL_BETONADAS),
       where("createdAt",">=",Timestamp.fromDate(hoje)),
@@ -554,8 +564,8 @@ window.loadDashboard = async function() {
     document.getElementById("d-betHoje").textContent = betHoje;
     document.getElementById("d-volHoje").textContent = fmt(volHoje);
     document.getElementById("d-tracos").textContent  = tracosCache.length;
-    let alertas = 0;
-    MATERIAIS.forEach(m => { if(m.min > 0 && (estoqueCache[m.id]||0) < m.min) alertas++; });
+    let alertas=0;
+    MATERIAIS.forEach(m => { if(m.min>0 && (estoqueCache[m.id]||0) < m.min) alertas++; });
     document.getElementById("d-alertas").textContent = alertas;
 
     const estoqueDiv = document.getElementById("dash-estoque-list");
@@ -563,8 +573,8 @@ window.loadDashboard = async function() {
     MATERIAIS.forEach(m => {
       const saldo = estoqueCache[m.id]||0;
       const temMin = m.min > 0;
-      const pct    = temMin ? Math.min(100,(saldo/(m.min*3))*100) : 100;
-      const cor    = temMin ? (saldo < m.min ? "var(--red)" : saldo < m.min*1.5 ? "var(--accent)" : "var(--green)") : "var(--green)";
+      const pct = temMin ? Math.min(100,(saldo/(m.min*3))*100) : 100;
+      const cor = temMin ? (saldo<m.min?"var(--red)":saldo<m.min*1.5?"var(--accent)":"var(--green)") : "var(--green)";
       estoqueDiv.innerHTML += `<div style="margin-bottom:12px;">
         <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
           <span>${m.label}</span><span style="font-weight:600;color:${cor}">${fmt(saldo,0)} ${m.unit}</span>
@@ -573,17 +583,17 @@ window.loadDashboard = async function() {
       </div>`;
     });
 
-    const snapB2 = await getDocs(query(collection(db, COL_BETONADAS), orderBy("createdAt","desc"), limit(6)));
+    const snapB2 = await getDocs(query(collection(db,COL_BETONADAS), orderBy("createdAt","desc"), limit(6)));
     const betDiv = document.getElementById("dash-bet-list");
     betDiv.innerHTML = "";
     let cnt=0;
     snapB2.forEach(d => {
       cnt++;
-      const b  = d.data();
+      const b = d.data();
       const tr = tracosCache.find(t => t.id === b.tracoid);
       betDiv.innerHTML += `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);">
-        <span>${b.data ? b.data.split("-").reverse().join("/") : "—"} ${b.hora||""}</span>
-        <span style="color:var(--text-dim)">${tr ? tr.codigo : "—"}</span>
+        <span>${b.data?b.data.split("-").reverse().join("/"):"—"} ${b.hora||""}</span>
+        <span style="color:var(--text-dim)">${tr?tr.codigo:"—"}</span>
         <span style="color:var(--accent);font-weight:600">${fmt(b.volume)} m³</span>
       </div>`;
     });
@@ -591,7 +601,6 @@ window.loadDashboard = async function() {
   } catch(e) { showToast("Erro ao carregar dashboard: "+e.message, true); }
 };
 
-// ── TRAÇOS
 window.loadTracos = async function() {
   await loadTracosCache();
   preencherSelectTracos();
@@ -604,8 +613,9 @@ window.loadTracos = async function() {
   tracosCache.forEach(t => {
     tbody.innerHTML += `<tr>
       <td><strong>${t.codigo}</strong></td><td>${t.fck}</td>
-      <td>${fmt(t.cimento,0)}</td><td>${fmt((t.areiaNat||0)+(t.areiaArt||0),0)}<br><small style="color:var(--text-dim)">${fmt(t.areiaNat||0,0)}nat/${fmt(t.areiaArt||0,0)}art</small></td><td>${fmt(t.brita,0)}</td>
-      <td>${fmt(t.agua,0)}</td><td>${fmt(t.aditivo,2)}</td><td>${t.slump||"—"}</td>
+      <td>${fmt(t.cimento,0)}</td>
+      <td>${fmt((t.areiaNat||0)+(t.areiaArt||0),0)}<br><small style="color:var(--text-dim)">${fmt(t.areiaNat||0,0)}nat/${fmt(t.areiaArt||0,0)}art</small></td>
+      <td>${fmt(t.brita,0)}</td><td>${fmt(t.agua,0)}</td><td>${fmt(t.aditivo,2)}</td><td>${t.slump||"—"}</td>
       <td style="white-space:nowrap;">
         <button class="btn btn-secondary btn-sm" onclick="editarTraco('${t.id}')">✏️</button>
         <button class="btn btn-danger btn-sm" onclick="excluirTraco('${t.id}')">🗑</button>
@@ -616,11 +626,9 @@ window.loadTracos = async function() {
 
 function calcPreviewTraco() {
   const cim = parseFloat(document.getElementById("t-cimento").value)||0;
-  const aNat = parseFloat(document.getElementById("t-areia-nat").value)||0;
-  const aArt = parseFloat(document.getElementById("t-areia-art").value)||0;
-  const are  = aNat + aArt;
-  const bri  = parseFloat(document.getElementById("t-brita").value)||0;
-  const agu  = parseFloat(document.getElementById("t-agua").value)||0;
+  const are = (parseFloat(document.getElementById("t-areia-nat").value)||0) + (parseFloat(document.getElementById("t-areia-art").value)||0);
+  const bri = parseFloat(document.getElementById("t-brita").value)||0;
+  const agu = parseFloat(document.getElementById("t-agua").value)||0;
   if(!cim) { document.getElementById("traco-preview").style.display="none"; return; }
   document.getElementById("traco-preview").style.display="block";
   const r = v => (v/cim).toFixed(3);
@@ -689,7 +697,6 @@ window.excluirTraco = async function(id) {
   loadTracos();
 };
 
-// ── BETONADAS
 window.loadBetonadas = async function() {
   const ini      = document.getElementById("f-bet-ini").value;
   const fim      = document.getElementById("f-bet-fim").value;
@@ -699,7 +706,7 @@ window.loadBetonadas = async function() {
   tbody.innerHTML = "";
   let total=0, count=0;
   snap.forEach(d => {
-    const b  = { id:d.id, ...d.data() };
+    const b = { id:d.id, ...d.data() };
     const dt = b.data||"";
     if(ini && dt < ini) return;
     if(fim && dt > fim) return;
@@ -711,11 +718,9 @@ window.loadBetonadas = async function() {
       <td><strong>${b.liberacao||"—"}</strong></td>
       <td>${fmtDT(dt,b.hora)}</td>
       <td>${fmtDT(b.dataFim||dt,b.horaFim)||"—"}</td>
-      <td><strong>${tr ? tr.codigo : "—"}</strong></td>
+      <td><strong>${tr?tr.codigo:"—"}</strong></td>
       <td style="color:var(--accent);font-weight:600">${fmt(b.volume)} m³</td>
-      <td>${b.local||"—"}</td>
-      <td>${b.descricao||"—"}</td>
-      <td>${b.operador||"—"}</td>
+      <td>${b.local||"—"}</td><td>${b.descricao||"—"}</td><td>${b.operador||"—"}</td>
       <td>${b.cp==="sim"?'<span class="badge badge-green">Sim</span>':'<span class="badge badge-red">Não</span>'}</td>
       <td><button class="btn btn-danger btn-sm" onclick="excluirBetonada('${b.id}')">🗑</button></td>
     </tr>`;
@@ -729,9 +734,7 @@ window.loadBetonadas = async function() {
 };
 
 window.clearFiltrosBetonadas = function() {
-  document.getElementById("f-bet-ini").value   = "";
-  document.getElementById("f-bet-fim").value   = "";
-  document.getElementById("f-bet-traco").value = "";
+  ["f-bet-ini","f-bet-fim","f-bet-traco"].forEach(id => document.getElementById(id).value = "");
   loadBetonadas();
 };
 
@@ -776,16 +779,16 @@ window.salvarBetonada = async function() {
   try {
     await addDoc(collection(db,COL_BETONADAS), {
       tracoid, volume, data:data_, hora,
-      liberacao:  document.getElementById("b-liberacao").value.trim(),
-      local:      document.getElementById("b-local").value.trim(),
-      descricao:  document.getElementById("b-descricao").value.trim(),
-      dataFim:    document.getElementById("b-data-fim").value,
-      horaFim:    document.getElementById("b-hora-fim").value,
-      operador:   document.getElementById("b-operador").value.trim(),
-      cp:         document.getElementById("b-cp").value,
-      cpId:       document.getElementById("b-cp-id").value.trim(),
-      obs:        document.getElementById("b-obs").value.trim(),
-      createdAt:  serverTimestamp(),
+      liberacao: document.getElementById("b-liberacao").value.trim(),
+      local:     document.getElementById("b-local").value.trim(),
+      descricao: document.getElementById("b-descricao").value.trim(),
+      dataFim:   document.getElementById("b-data-fim").value,
+      horaFim:   document.getElementById("b-hora-fim").value,
+      operador:  document.getElementById("b-operador").value.trim(),
+      cp:        document.getElementById("b-cp").value,
+      cpId:      document.getElementById("b-cp-id").value.trim(),
+      obs:       document.getElementById("b-obs").value.trim(),
+      createdAt: serverTimestamp(),
     });
     if(t) {
       const consumos = [
@@ -821,7 +824,6 @@ window.excluirBetonada = async function(id) {
   loadBetonadas();
 };
 
-// ── ESTOQUE
 window.loadEstoque = async function() {
   await loadEstoqueCache();
   const div      = document.getElementById("estoque-cards");
@@ -831,39 +833,37 @@ window.loadEstoque = async function() {
     const saldo  = estoqueCache[m.id]||0;
     const temMin = m.min > 0;
     const pct    = temMin ? Math.min(100,(saldo/(m.min*3))*100) : 100;
-    const cor    = temMin ? (saldo < m.min ? "var(--red)" : saldo < m.min*1.5 ? "var(--accent)" : "var(--green)") : "var(--green)";
+    const cor    = temMin ? (saldo<m.min?"var(--red)":saldo<m.min*1.5?"var(--accent)":"var(--green)") : "var(--green)";
     if(temMin && saldo < m.min)
       alertDiv.innerHTML += `<div class="alert alert-danger">⚠️ Estoque baixo: <strong>${m.label}</strong> — ${fmt(saldo,0)} ${m.unit} (mínimo: ${fmt(m.min,0)} ${m.unit})</div>`;
     div.innerHTML += `<div class="stat-card">
       <div class="stat-label">${m.label}</div>
       <div class="stat-value" style="color:${cor}">${fmt(saldo,0)}<span class="stat-unit">${m.unit}</span></div>
       <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:${cor}"></div></div>
-      <div class="stat-sub">${temMin ? "Mínimo: " + fmt(m.min,0) + " " + m.unit : ""}</div>
+      <div class="stat-sub">${temMin?"Mínimo: "+fmt(m.min,0)+" "+m.unit:""}</div>
     </div>`;
   });
-  // Histórico
   const snap  = await getDocs(query(collection(db,COL_MOVS), orderBy("createdAt","desc"), limit(80)));
   const tbody = document.getElementById("movimentacoes-tbody");
   tbody.innerHTML = "";
   let cnt=0;
   const tipos = {
-    entrada:   '<span class="badge badge-green">Entrada</span>',
-    saida:     '<span class="badge badge-red">Saída</span>',
-    saida_auto:'<span class="badge badge-blue">Auto</span>',
-    ajuste:    '<span class="badge badge-yellow">Ajuste</span>',
+    entrada:    '<span class="badge badge-green">Entrada</span>',
+    saida:      '<span class="badge badge-red">Saída</span>',
+    saida_auto: '<span class="badge badge-blue">Auto</span>',
+    ajuste:     '<span class="badge badge-yellow">Ajuste</span>',
   };
   snap.forEach(d => {
     cnt++;
     const m   = d.data();
     const mat = MATERIAIS.find(x => x.id === m.material);
     tbody.innerHTML += `<tr>
-      <td>${m.data ? m.data.split("-").reverse().join("/") : "—"}</td>
-      <td>${mat ? mat.label : m.material}</td>
+      <td>${m.data?m.data.split("-").reverse().join("/"):"—"}</td>
+      <td>${mat?mat.label:m.material}</td>
       <td>${tipos[m.tipo]||m.tipo}</td>
       <td style="font-weight:600;color:${m.tipo==="entrada"?"var(--green)":"var(--red)"}">
         ${m.tipo==="entrada"?"+":"-"}${fmt(m.qtd,0)}</td>
-      <td>${m.nota||"—"}</td>
-      <td>${m.responsavel||"—"}</td>
+      <td>${m.nota||"—"}</td><td>${m.responsavel||"—"}</td>
       <td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${m.obs||"—"}</td>
     </tr>`;
   });
@@ -894,10 +894,9 @@ window.salvarMovimentacao = async function() {
   } catch(e) { showToast("Erro: "+e.message, true); }
 };
 
-// ── RELATÓRIOS
 window.gerarRelatorio = async function() {
-  const ini = document.getElementById("r-ini").value;
-  const fim = document.getElementById("r-fim").value;
+  const ini  = document.getElementById("r-ini").value;
+  const fim  = document.getElementById("r-fim").value;
   const snap = await getDocs(query(collection(db,COL_BETONADAS), orderBy("data")));
   const porTraco={};
   let totalVol=0;
@@ -929,7 +928,7 @@ window.gerarRelatorio = async function() {
         const t = tracosCache.find(x => x.id===tid);
         return `<tr><td><strong>${t?t.codigo:"—"}</strong></td><td>${v.count}</td><td>${fmt(v.vol)}</td><td>${totalVol?fmt(v.vol/totalVol*100)+"%":"—"}</td></tr>`;
       }).join("")+
-      `<tr style="font-weight:600;border-top:2px solid var(--border)"><td>TOTAL</td><td>${Object.values(porTraco).reduce((a,b)=>a+b.count,0)}</td><td>${fmt(totalVol)}</td><td>100%</td></tr>`+
+      `<tr style="font-weight:600;border-top:2px solid #ccc"><td>TOTAL</td><td>${Object.values(porTraco).reduce((a,b)=>a+b.count,0)}</td><td>${fmt(totalVol)}</td><td>100%</td></tr>`+
       `</tbody></table>`;
   }
   const div2 = document.getElementById("rel-consumo-mat");
@@ -942,110 +941,22 @@ window.gerarRelatorio = async function() {
   }).join("") || '<div class="empty">Sem dados.</div>';
 };
 
-// ── CSV
-window.exportarBetonadas = async function() {
-  showToast("Gerando planilha...");
-  const snap = await getDocs(query(collection(db,COL_BETONADAS), orderBy("data","desc")));
-  const wb = XLSX.utils.book_new();
-  const ws = {};
-  const ref = {s:{r:0,c:0},e:{r:0,c:0}};
-  const AZUL_ESC="1A3A6B", AZUL_MED="2755A5", AZUL_CLAR="D6E4F7", BRANCO="FFFFFF", AMARELO="F5C518", CINZA="F2F2F2";
-
-  const cell = (v,s) => ({v, t:typeof v==="number"?"n":"s", s});
-  const hdr = v => cell(v,{
-    font:{bold:true,color:{rgb:BRANCO},sz:10,name:"Arial"},
-    fill:{fgColor:{rgb:AZUL_ESC}},
-    alignment:{horizontal:"center",vertical:"center",wrapText:true},
-    border:{bottom:{style:"thin",color:{rgb:AZUL_MED}},right:{style:"thin",color:{rgb:AZUL_MED}}}
-  });
-  const dat = (v,par,bold=false) => cell(v,{
-    font:{bold,sz:9,name:"Arial",color:{rgb:"1A1A1A"}},
-    fill:{fgColor:{rgb:par?AZUL_CLAR:BRANCO}},
-    alignment:{horizontal:"center",vertical:"center"},
-    border:{bottom:{style:"hair",color:{rgb:"CCCCCC"}},right:{style:"hair",color:{rgb:"CCCCCC"}}}
-  });
-  const tit = (v,sz=13) => cell(v,{
-    font:{bold:true,sz,name:"Arial",color:{rgb:BRANCO}},
-    fill:{fgColor:{rgb:AZUL_MED}},
-    alignment:{horizontal:"center",vertical:"center"}
-  });
-  const sub = v => cell(v,{
-    font:{bold:false,sz:9,name:"Arial",color:{rgb:BRANCO}},
-    fill:{fgColor:{rgb:AZUL_MED}},
-    alignment:{horizontal:"center",vertical:"center"}
-  });
-
-  const sc = (r,c,v) => {
-    ws[XLSX.utils.encode_cell({r,c})]=v;
-    if(r>ref.e.r) ref.e.r=r;
-    if(c>ref.e.c) ref.e.c=c;
-  };
-
-  let row=0;
-  sc(row,0,tit("BUCAGRANS CONSTRUTORA DE OBRAS S.A",14)); row++;
-  sc(row,0,sub("PCH LEBON RÉGIS  —  LABORATÓRIO DE CONTROLE DE CONCRETO")); row++;
-  sc(row,0,sub("RELATÓRIO DE BETONADAS")); row++;
-  sc(row,0,cell("Gerado em: "+new Date().toLocaleDateString("pt-BR")+"   |   by Equiel",{font:{sz:8,italic:true,color:{rgb:"888888"},name:"Arial"},fill:{fgColor:{rgb:CINZA}},alignment:{horizontal:"right"}})); row++;
-  row++;
-
-  const headers=["Nº Liberação","Data Início","Hora Início","Data Término","Hora Término","Traço","Fck (MPa)","Volume (m³)","Local / Estrutura","Descrição do Serviço","Operador","CP?","Nº CP","Observações"];
-  const hRow=row;
-  headers.forEach((h,c)=>sc(row,c,hdr(h))); row++;
-
-  const fD=v=>v?v.split("-").reverse().join("/"):"";
-  let count=0, totalVol=0;
-  snap.forEach(d=>{
-    const b=d.data(), t=tracosCache.find(x=>x.id===b.tracoid), par=count%2===0;
-    [b.liberacao||"",fD(b.data),b.hora||"",fD(b.dataFim||""),b.horaFim||"",
-     t?t.codigo:"—",t?t.fck:"",parseFloat(b.volume)||0,
-     b.local||"",b.descricao||"",b.operador||"",
-     b.cp==="sim"?"SIM":"NÃO",b.cpId||"",b.obs||""
-    ].forEach((v,c)=>sc(row,c,dat(v,par,c===0)));
-    totalVol+=parseFloat(b.volume)||0; count++; row++;
-  });
-
-  const totRow=row;
-  const totSt={font:{bold:true,sz:10,color:{rgb:BRANCO},name:"Arial"},fill:{fgColor:{rgb:AZUL_ESC}},alignment:{horizontal:"center"}};
-  for(let c=0;c<14;c++) sc(totRow,c,cell("",{fill:{fgColor:{rgb:AZUL_ESC}}}));
-  sc(totRow,0,cell("TOTAL",totSt));
-  sc(totRow,6,cell("Betonadas: "+count,totSt));
-  sc(totRow,7,cell(parseFloat(totalVol.toFixed(2)),{font:{bold:true,sz:10,color:{rgb:AMARELO},name:"Arial"},fill:{fgColor:{rgb:AZUL_ESC}},alignment:{horizontal:"center"},numFmt:"0.00"}));
-  row+=2;
-  sc(row,0,cell("Documento gerado automaticamente pelo Sistema Central de Concreto — PCH Lebon Régis  |  by Equiel",{font:{sz:8,italic:true,color:{rgb:"AAAAAA"},name:"Arial"},alignment:{horizontal:"left"}}));
-
-  const NC=13;
-  ws["!merges"]=[
-    {s:{r:0,c:0},e:{r:0,c:NC}},{s:{r:1,c:0},e:{r:1,c:NC}},
-    {s:{r:2,c:0},e:{r:2,c:NC}},{s:{r:3,c:0},e:{r:3,c:NC}},
-    {s:{r:totRow,c:0},e:{r:totRow,c:5}},
-    {s:{r:row,c:0},e:{r:row,c:NC}},
-  ];
-  ws["!cols"]=[{wch:14},{wch:12},{wch:10},{wch:12},{wch:10},{wch:16},{wch:8},{wch:9},{wch:22},{wch:24},{wch:14},{wch:6},{wch:12},{wch:22}];
-  ws["!rows"]=[];
-  ws["!rows"][0]={hpt:30};ws["!rows"][1]={hpt:20};ws["!rows"][2]={hpt:18};ws["!rows"][3]={hpt:14};ws["!rows"][hRow]={hpt:34};
-  ws["!ref"]=XLSX.utils.encode_range(ref);
-  XLSX.utils.book_append_sheet(wb,ws,"Betonadas");
-  XLSX.writeFile(wb,"Betonadas_PCH_"+new Date().toISOString().slice(0,10)+".xlsx");
-  showToast("Planilha Excel gerada!");
+// ── IMPRIMIR EM PDF
+window.imprimirRelatorio = function() {
+  const ini = document.getElementById("r-ini").value;
+  const fim = document.getElementById("r-fim").value;
+  const fmtD = v => v ? v.split("-").reverse().join("/") : "";
+  const periodo = (ini||fim)
+    ? "Período: "+(ini?fmtD(ini):"início")+" a "+(fim?fmtD(fim):"hoje")
+    : "Período: todos os registros";
+  document.getElementById("print-periodo-label").textContent = periodo;
+  document.getElementById("print-date-label").textContent =
+    "Gerado em: "+new Date().toLocaleDateString("pt-BR")+" às "+new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
+  window.print();
 };
 
-window.exportarMovimentacoes = async function() {
-  const snap = await getDocs(query(collection(db,COL_MOVS), orderBy("createdAt","desc")));
-  let csv = "Data;Material;Tipo;Quantidade;Nota;Responsavel;Obs\n";
-  snap.forEach(d => {
-    const m = d.data();
-    const mat = MATERIAIS.find(x => x.id===m.material);
-    csv += [m.data,mat?mat.label:m.material,m.tipo,m.qtd,m.nota,m.responsavel,m.obs].map(v=>`"${v||""}"`).join(";")+"\n";
-  });
-  downloadCSV(csv,"movimentacoes.csv");
-};
-
-function downloadCSV(csv, filename) {
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8;"}));
-  a.download = filename;
-  a.click();
-}
+document.getElementById("r-ini").value = new Date(new Date().setDate(1)).toISOString().split("T")[0];
+document.getElementById("r-fim").value = today();
 
 // ── IMPORTAR TRAÇOS DA TABELA PCH
 document.getElementById("btn-importar-tracos").addEventListener("click", () => {
@@ -1054,107 +965,27 @@ document.getElementById("btn-importar-tracos").addEventListener("click", () => {
 });
 
 async function importarTracosTabela() {
-  // Dados exatos da Tabela de Traços PCH Lebon Régis Rev.00
   const tracos = [
-    {
-      codigo:      "9.28.1.B.00",
-      classe:      "D",
-      fck:         9,
-      tipoCimento: "CP IV 32 - Votoran",
-      dmaxMm:      12.5,
-      acEq:        0.80,
-      cimento:     231,
-      agua:        185,
-      areiaNat:    255,
-      areiaArt:    0,
-      brita:       689,     // A A Britagem
-      tipoBrita:   "brita0", // Brita 12,5 mm
-      pedrisco:    162,
-      aditivoPla:  1.85,
-      aditivoRet:  0,
-      slump:       12,
-      obs:         "Concreto de Enchimento e Regularização; Barragem e Muro de Gravidade. Dmáx 12,5mm. A/Ceq=0,80. Massa unitária: 2.438 kg/m³",
-    },
-    {
-      codigo:      "9.28 ARGAM",
-      classe:      "C",
-      fck:         9,
-      tipoCimento: "CP IV 32 - Votoran",
-      dmaxMm:      4.8,
-      acEq:        0.80,
-      cimento:     373,
-      agua:        299,
-      areiaNat:    412,
-      areiaArt:    0,
-      brita:       1114,    // A A Britagem
-      tipoBrita:   "brita0",
-      pedrisco:    0,
-      aditivoPla:  2.98,
-      aditivoRet:  0,
-      slump:       0,       // FLUIDO
-      obs:         "Argamassa / Concreto Fluido. Dmáx 4,8mm. A/Ceq=0,80. Slump: FLUIDO. Massa unitária: 2.198 kg/m³",
-    },
-    {
-      codigo:      "20.28.1.B.00",
-      classe:      "B",
-      fck:         20,
-      tipoCimento: "CP IV 32 - Votoran",
-      dmaxMm:      12.5,
-      acEq:        0.57,
-      cimento:     325,
-      agua:        185,
-      areiaNat:    244,
-      areiaArt:    0,
-      brita:       658,     // Brita 12,5 mm
-      tipoBrita:   "brita0",
-      pedrisco:    155,
-      aditivoPla:  2.59,
-      aditivoRet:  0,
-      slump:       12,
-      obs:         "Base de Subestação, Blocos de ancoragem, Fundação em geral. Dmáx 12,5mm. A/Ceq=0,57. Massa unitária: 2.443 kg/m³",
-    },
+    { codigo:"9.28.1.B.00",   fck:9,  tipoCimento:"CP IV 32 - Votoran", cimento:231, agua:185, areiaNat:255, areiaArt:0, brita:689,  tipoBrita:"brita0", pedrisco:162, aditivoPla:1.85, aditivoRet:0, slump:12, obs:"Concreto de Enchimento e Regularização; Barragem e Muro de Gravidade. Dmáx 12,5mm. A/Ceq=0,80. Massa unitária: 2.438 kg/m³" },
+    { codigo:"9.28 ARGAM",    fck:9,  tipoCimento:"CP IV 32 - Votoran", cimento:373, agua:299, areiaNat:412, areiaArt:0, brita:1114, tipoBrita:"brita0", pedrisco:0,   aditivoPla:2.98, aditivoRet:0, slump:0,  obs:"Argamassa / Concreto Fluido. Dmáx 4,8mm. A/Ceq=0,80. Slump: FLUIDO. Massa unitária: 2.198 kg/m³" },
+    { codigo:"20.28.1.B.00",  fck:20, tipoCimento:"CP IV 32 - Votoran", cimento:325, agua:185, areiaNat:244, areiaArt:0, brita:658,  tipoBrita:"brita0", pedrisco:155, aditivoPla:2.59, aditivoRet:0, slump:12, obs:"Base de Subestação, Blocos de ancoragem, Fundação em geral. Dmáx 12,5mm. A/Ceq=0,57. Massa unitária: 2.443 kg/m³" },
   ];
-
-  let importados = 0, pulados = 0;
+  let importados=0, pulados=0;
   for(const t of tracos) {
-    // Verificar se já existe pelo código
-    const existe = tracosCache.find(x => x.codigo === t.codigo);
-    if(existe) { pulados++; continue; }
+    if(tracosCache.find(x => x.codigo === t.codigo)) { pulados++; continue; }
     try {
-      await addDoc(collection(db, COL_TRACOS), {
-        codigo:      t.codigo,
-        fck:         t.fck,
-        cimento:     t.cimento,
-        areiaNat:    t.areiaNat,
-        areiaArt:    t.areiaArt,
-        brita:       t.brita,
-        tipoBrita:   t.tipoBrita,
-        pedrisco:    t.pedrisco,
-        agua:        t.agua,
-        aditivoPla:  t.aditivoPla,
-        aditivoRet:  t.aditivoRet,
-        slump:       t.slump,
-        tipoCimento: t.tipoCimento,
-        obs:         t.obs,
-        createdAt:   serverTimestamp(),
-        updatedAt:   serverTimestamp(),
-      });
+      await addDoc(collection(db,COL_TRACOS), { ...t, createdAt:serverTimestamp(), updatedAt:serverTimestamp() });
       importados++;
-    } catch(e) {
-      showToast("Erro ao importar " + t.codigo + ": " + e.message, true);
-    }
+    } catch(e) { showToast("Erro ao importar "+t.codigo+": "+e.message, true); }
   }
-  const msg = [];
-  if(importados) msg.push(importados + " traço(s) importado(s)!");
-  if(pulados)    msg.push(pulados + " já existia(m), pulado(s).");
+  const msg=[];
+  if(importados) msg.push(importados+" traço(s) importado(s)!");
+  if(pulados)    msg.push(pulados+" já existia(m), pulado(s).");
   showToast(msg.join(" "));
   loadTracos();
 }
 
-document.getElementById("r-ini").value = new Date(new Date().setDate(1)).toISOString().split("T")[0];
-document.getElementById("r-fim").value = today();
 initApp();
 </script>
-
 </body>
 </html>
