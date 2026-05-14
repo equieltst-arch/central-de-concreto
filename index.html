@@ -98,12 +98,19 @@
   .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .6s linear infinite; margin-right: 6px; vertical-align: middle; }
   @keyframes spin { to { transform: rotate(360deg); } }
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
 <div id="app">
   <div class="topbar">
-    <div class="topbar-logo">⬡ CENTRAL DE CONCRETO</div>
-    <div class="topbar-title">PCH Lebon Regis</div>
+    <div style="display:flex;flex-direction:column;line-height:1.1;">
+      <div class="topbar-logo">⬡ CENTRAL DE CONCRETO</div>
+      <div style="font-size:10px;color:var(--text-dim);letter-spacing:.5px;text-transform:uppercase;">Bucagrans Construtora de Obras S.A</div>
+    </div>
+    <div style="display:flex;flex-direction:column;line-height:1.2;flex:1;padding-left:16px;">
+      <div style="font-size:13px;color:var(--text);font-weight:600;letter-spacing:.5px;text-transform:uppercase;">PCH Lebon Régis</div>
+    </div>
+    <div style="font-size:9px;color:var(--text-muted);letter-spacing:.3px;align-self:flex-end;padding-bottom:2px;">by Equiel</div>
   </div>
   <div class="nav-tabs">
     <button class="nav-tab active" onclick="showPage('dashboard')">Dashboard</button>
@@ -222,7 +229,7 @@
   <div class="card">
     <div class="card-title">Exportar Dados</div>
     <div style="display:flex;gap:12px;flex-wrap:wrap;">
-      <button class="btn btn-secondary" onclick="exportarBetonadas()">⬇ Betonadas CSV</button>
+      <button class="btn btn-primary" onclick="exportarBetonadas()">📊 Exportar Betonadas Excel</button>
       <button class="btn btn-secondary" onclick="exportarMovimentacoes()">⬇ Movimentações CSV</button>
     </div>
   </div>
@@ -937,14 +944,89 @@ window.gerarRelatorio = async function() {
 
 // ── CSV
 window.exportarBetonadas = async function() {
+  showToast("Gerando planilha...");
   const snap = await getDocs(query(collection(db,COL_BETONADAS), orderBy("data","desc")));
-  let csv = "Data;Hora;Traço;Fck;Volume(m³);Local;Operador;CP;ID_CP;Obs\n";
-  snap.forEach(d => {
-    const b = d.data();
-    const t = tracosCache.find(x => x.id===b.tracoid);
-    csv += [b.data,b.hora,t?t.codigo:"",t?t.fck:"",b.volume,b.local,b.operador,b.cp,b.cpId,b.obs].map(v=>`"${v||""}"`).join(";")+"\n";
+  const wb = XLSX.utils.book_new();
+  const ws = {};
+  const ref = {s:{r:0,c:0},e:{r:0,c:0}};
+  const AZUL_ESC="1A3A6B", AZUL_MED="2755A5", AZUL_CLAR="D6E4F7", BRANCO="FFFFFF", AMARELO="F5C518", CINZA="F2F2F2";
+
+  const cell = (v,s) => ({v, t:typeof v==="number"?"n":"s", s});
+  const hdr = v => cell(v,{
+    font:{bold:true,color:{rgb:BRANCO},sz:10,name:"Arial"},
+    fill:{fgColor:{rgb:AZUL_ESC}},
+    alignment:{horizontal:"center",vertical:"center",wrapText:true},
+    border:{bottom:{style:"thin",color:{rgb:AZUL_MED}},right:{style:"thin",color:{rgb:AZUL_MED}}}
   });
-  downloadCSV(csv,"betonadas.csv");
+  const dat = (v,par,bold=false) => cell(v,{
+    font:{bold,sz:9,name:"Arial",color:{rgb:"1A1A1A"}},
+    fill:{fgColor:{rgb:par?AZUL_CLAR:BRANCO}},
+    alignment:{horizontal:"center",vertical:"center"},
+    border:{bottom:{style:"hair",color:{rgb:"CCCCCC"}},right:{style:"hair",color:{rgb:"CCCCCC"}}}
+  });
+  const tit = (v,sz=13) => cell(v,{
+    font:{bold:true,sz,name:"Arial",color:{rgb:BRANCO}},
+    fill:{fgColor:{rgb:AZUL_MED}},
+    alignment:{horizontal:"center",vertical:"center"}
+  });
+  const sub = v => cell(v,{
+    font:{bold:false,sz:9,name:"Arial",color:{rgb:BRANCO}},
+    fill:{fgColor:{rgb:AZUL_MED}},
+    alignment:{horizontal:"center",vertical:"center"}
+  });
+
+  const sc = (r,c,v) => {
+    ws[XLSX.utils.encode_cell({r,c})]=v;
+    if(r>ref.e.r) ref.e.r=r;
+    if(c>ref.e.c) ref.e.c=c;
+  };
+
+  let row=0;
+  sc(row,0,tit("BUCAGRANS CONSTRUTORA DE OBRAS S.A",14)); row++;
+  sc(row,0,sub("PCH LEBON RÉGIS  —  LABORATÓRIO DE CONTROLE DE CONCRETO")); row++;
+  sc(row,0,sub("RELATÓRIO DE BETONADAS")); row++;
+  sc(row,0,cell("Gerado em: "+new Date().toLocaleDateString("pt-BR")+"   |   by Equiel",{font:{sz:8,italic:true,color:{rgb:"888888"},name:"Arial"},fill:{fgColor:{rgb:CINZA}},alignment:{horizontal:"right"}})); row++;
+  row++;
+
+  const headers=["Nº Liberação","Data Início","Hora Início","Data Término","Hora Término","Traço","Fck (MPa)","Volume (m³)","Local / Estrutura","Descrição do Serviço","Operador","CP?","Nº CP","Observações"];
+  const hRow=row;
+  headers.forEach((h,c)=>sc(row,c,hdr(h))); row++;
+
+  const fD=v=>v?v.split("-").reverse().join("/"):"";
+  let count=0, totalVol=0;
+  snap.forEach(d=>{
+    const b=d.data(), t=tracosCache.find(x=>x.id===b.tracoid), par=count%2===0;
+    [b.liberacao||"",fD(b.data),b.hora||"",fD(b.dataFim||""),b.horaFim||"",
+     t?t.codigo:"—",t?t.fck:"",parseFloat(b.volume)||0,
+     b.local||"",b.descricao||"",b.operador||"",
+     b.cp==="sim"?"SIM":"NÃO",b.cpId||"",b.obs||""
+    ].forEach((v,c)=>sc(row,c,dat(v,par,c===0)));
+    totalVol+=parseFloat(b.volume)||0; count++; row++;
+  });
+
+  const totRow=row;
+  const totSt={font:{bold:true,sz:10,color:{rgb:BRANCO},name:"Arial"},fill:{fgColor:{rgb:AZUL_ESC}},alignment:{horizontal:"center"}};
+  for(let c=0;c<14;c++) sc(totRow,c,cell("",{fill:{fgColor:{rgb:AZUL_ESC}}}));
+  sc(totRow,0,cell("TOTAL",totSt));
+  sc(totRow,6,cell("Betonadas: "+count,totSt));
+  sc(totRow,7,cell(parseFloat(totalVol.toFixed(2)),{font:{bold:true,sz:10,color:{rgb:AMARELO},name:"Arial"},fill:{fgColor:{rgb:AZUL_ESC}},alignment:{horizontal:"center"},numFmt:"0.00"}));
+  row+=2;
+  sc(row,0,cell("Documento gerado automaticamente pelo Sistema Central de Concreto — PCH Lebon Régis  |  by Equiel",{font:{sz:8,italic:true,color:{rgb:"AAAAAA"},name:"Arial"},alignment:{horizontal:"left"}}));
+
+  const NC=13;
+  ws["!merges"]=[
+    {s:{r:0,c:0},e:{r:0,c:NC}},{s:{r:1,c:0},e:{r:1,c:NC}},
+    {s:{r:2,c:0},e:{r:2,c:NC}},{s:{r:3,c:0},e:{r:3,c:NC}},
+    {s:{r:totRow,c:0},e:{r:totRow,c:5}},
+    {s:{r:row,c:0},e:{r:row,c:NC}},
+  ];
+  ws["!cols"]=[{wch:14},{wch:12},{wch:10},{wch:12},{wch:10},{wch:16},{wch:8},{wch:9},{wch:22},{wch:24},{wch:14},{wch:6},{wch:12},{wch:22}];
+  ws["!rows"]=[];
+  ws["!rows"][0]={hpt:30};ws["!rows"][1]={hpt:20};ws["!rows"][2]={hpt:18};ws["!rows"][3]={hpt:14};ws["!rows"][hRow]={hpt:34};
+  ws["!ref"]=XLSX.utils.encode_range(ref);
+  XLSX.utils.book_append_sheet(wb,ws,"Betonadas");
+  XLSX.writeFile(wb,"Betonadas_PCH_"+new Date().toISOString().slice(0,10)+".xlsx");
+  showToast("Planilha Excel gerada!");
 };
 
 window.exportarMovimentacoes = async function() {
