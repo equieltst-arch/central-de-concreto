@@ -389,7 +389,7 @@
     </div>
     <div class="form-group">
       <label>Tipo de Brita</label>
-      <select id="t-tipo-brita"><option value="brita1">Brita 12,5 mm</option><option value="brita2">Brita 19 mm</option><option value="pedrisco">Brita 0</option></select>
+      <select id="t-tipo-brita"><option value="brita0">Brita 0 (Pedrisco)</option><option value="brita1">Brita 1 (12,5mm)</option><option value="brita2">Brita 2 (19mm)</option></select>
     </div>
     <div class="form-group"><label>Tipo de Cimento</label><input id="t-tipo-cimento" placeholder="CP II-Z-32"></div>
     <div class="form-group"><label>Observações</label><textarea id="t-obs"></textarea></div>
@@ -463,9 +463,10 @@
           <option value="cimento">Cimento</option>
           <option value="areia_nat">Areia Natural</option>
           <option value="areia_art">Areia Artificial</option>
-          <option value="pedrisco">Brita 0</option>
-          <option value="brita1">Brita 12,5 mm</option>
-          <option value="brita2">Brita 19 mm</option>
+          <option value="pedrisco">Pedrisco</option>
+          <option value="brita0">Brita 0 (Pedrisco)</option>
+          <option value="brita1">Brita 1 (12,5mm)</option>
+          <option value="brita2">Brita 2 (19mm)</option>
           <option value="agua">Água</option>
           <option value="aditivo_ret">Aditivo Retardador</option>
           <option value="aditivo_pla">Aditivo Plastificante</option>
@@ -528,9 +529,9 @@ const MATERIAIS = [
   {id:"cimento",     label:"Cimento",              unit:"kg", min:35000},
   {id:"areia_nat",   label:"Areia Natural",         unit:"kg", min:0},
   {id:"areia_art",   label:"Areia Artificial",      unit:"kg", min:0},
-  {id:"brita0",      label:"Brita 0",               unit:"kg", min:0},
-  {id:"brita1",      label:"Brita 1",               unit:"kg", min:0},
-  {id:"brita2",      label:"Brita 2",               unit:"kg", min:0},
+  {id:"brita0",      label:"Brita 0 (Pedrisco)",      unit:"kg", min:0},
+  {id:"brita1",      label:"Brita 1 (12,5mm)",        unit:"kg", min:0},
+  {id:"brita2",      label:"Brita 2 (19mm)",           unit:"kg", min:0},
   {id:"agua",        label:"Água",                  unit:"L",  min:0},
   {id:"aditivo_ret", label:"Aditivo Retardador",    unit:"kg", min:0},
   {id:"aditivo_pla", label:"Aditivo Plastificante", unit:"kg", min:0},
