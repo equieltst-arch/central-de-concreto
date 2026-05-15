@@ -1095,9 +1095,9 @@ document.getElementById("btn-importar-tracos").addEventListener("click", () => {
 
 async function importarTracosTabela() {
   const tracos = [
-    { codigo:"9.28.1.B.00",   fck:9,  tipoCimento:"CP IV 32 - Votoran", cimento:231, agua:185, areiaNat:255, areiaArt:0, brita:689,  tipoBrita:"brita0", pedrisco:162, aditivoPla:1.85, aditivoRet:0, slump:12, obs:"Concreto de Enchimento e Regularização; Barragem e Muro de Gravidade. Dmáx 12,5mm. A/Ceq=0,80. Massa unitária: 2.438 kg/m³" },
-    { codigo:"9.28 ARGAM",    fck:9,  tipoCimento:"CP IV 32 - Votoran", cimento:373, agua:299, areiaNat:412, areiaArt:0, brita:1114, tipoBrita:"brita0", pedrisco:0,   aditivoPla:2.98, aditivoRet:0, slump:0,  obs:"Argamassa / Concreto Fluido. Dmáx 4,8mm. A/Ceq=0,80. Slump: FLUIDO. Massa unitária: 2.198 kg/m³" },
-    { codigo:"20.28.1.B.00",  fck:20, tipoCimento:"CP IV 32 - Votoran", cimento:325, agua:185, areiaNat:244, areiaArt:0, brita:658,  tipoBrita:"brita0", pedrisco:155, aditivoPla:2.59, aditivoRet:0, slump:12, obs:"Base de Subestação, Blocos de ancoragem, Fundação em geral. Dmáx 12,5mm. A/Ceq=0,57. Massa unitária: 2.443 kg/m³" },
+    { codigo:"9.28.1.B.00",   fck:9,  tipoCimento:"CP IV 32 - Votoran", cimento:231, agua:185, areiaNat:255, areiaArt:689,  brita:916,  tipoBrita:"brita1", pedrisco:162, aditivoPla:1.85, aditivoRet:0, slump:12, obs:"Concreto de Enchimento e Regularização; Barragem e Muro de Gravidade. Dmáx 12,5mm. A/Ceq=0,80. Massa unitária: 2.438 kg/m³" },
+    { codigo:"9.28 ARGAM",    fck:9,  tipoCimento:"CP IV 32 - Votoran", cimento:373, agua:299, areiaNat:412, areiaArt:1114, brita:0,    tipoBrita:"brita1", pedrisco:0,   aditivoPla:2.98, aditivoRet:0, slump:0,  obs:"Argamassa / Concreto Fluido. Dmáx 4,8mm. A/Ceq=0,80. Slump: FLUIDO. Massa unitária: 2.198 kg/m³" },
+    { codigo:"20.28.1.B.00",  fck:20, tipoCimento:"CP IV 32 - Votoran", cimento:325, agua:185, areiaNat:244, areiaArt:658,  brita:876,  tipoBrita:"brita1", pedrisco:155, aditivoPla:2.59, aditivoRet:0, slump:12, obs:"Base de Subestação, Blocos de ancoragem, Fundação em geral. Dmáx 12,5mm. A/Ceq=0,57. Massa unitária: 2.443 kg/m³" },
   ];
   let importados=0, pulados=0;
   for(const t of tracos) {
