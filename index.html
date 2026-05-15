@@ -99,6 +99,13 @@
   .stat-sub { font-size: 12px; color: var(--text-dim); margin-top: 4px; }
   .progress-bar { height: 6px; background: var(--border); border-radius: 3px; margin-top: 8px; overflow: hidden; }
   .progress-fill { height: 100%; border-radius: 3px; transition: width .5s; }
+  .silo-card { margin-bottom: 20px; }
+  .silo-title { font-size: 13px; color: var(--text-dim); margin-bottom: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .8px; }
+  .silo-container { display: flex; align-items: center; justify-content: center; margin-bottom: 16px; }
+  .silo-shell { position: relative; width: 140px; height: 260px; border: 5px solid var(--accent); border-radius: 28px 28px 20px 20px; background: linear-gradient(to bottom, #f8f9fb 0%, #eef2f8 100%); overflow: hidden; box-shadow: 0 8px 24px rgba(26,58,107,0.15); display: flex; align-items: center; justify-content: center; }
+  .silo-shell::before { content: ""; position: absolute; top: -10px; left: 50%; transform: translateX(-50%); width: 60px; height: 18px; border-radius: 12px 12px 0 0; background: var(--accent); border: 5px solid var(--accent); border-bottom: none; z-index: 10; }
+  .silo-name { position: absolute; font-family: var(--font-head); font-size: 16px; font-weight: 800; color: var(--accent); letter-spacing: 1px; text-transform: uppercase; z-index: 5; writing-mode: vertical-rl; text-orientation: mixed; transform: rotate(180deg); }
+  .silo-fill { position: absolute; left: 0; bottom: 0; width: 100%; background: linear-gradient(to bottom, #999 0%, #6f6f6f 100%); transition: height .8s cubic-bezier(0.34, 1.56, 0.64, 1); border-radius: 0 0 15px 15px; z-index: 1; }
 
   /* ── ALERTAS ── */
   .alert { padding: 10px 14px; border-radius: var(--radius); font-size: 13px; margin-bottom: 12px; }
@@ -204,7 +211,21 @@
       </div>
       <div class="divider"></div>
       <div class="grid-2">
-        <div class="card"><div class="card-title">Estoque Atual</div><div id="dash-estoque-list"><div class="empty"><span class="spinner"></span> Carregando...</div></div></div>
+        <div class="card">
+          <div class="card-title">Estoque Atual</div>
+          <div id="dash-silo-card" class="silo-card">
+            <div class="silo-title">Silo de Cimento</div>
+            <div class="silo-container">
+              <div class="silo-shell">
+                <div class="silo-name">BUCAGRAN S</div>
+                <div class="silo-fill" style="height:0%"></div>
+              </div>
+            </div>
+            <div class="silo-label">Carregando...</div>
+            <div class="silo-caption">Capacidade 80 t</div>
+          </div>
+          <div id="dash-estoque-list"><div class="empty"><span class="spinner"></span> Carregando...</div></div>
+        </div>
         <div class="card"><div class="card-title">Últimas Betonadas</div><div id="dash-bet-list"><div class="empty"><span class="spinner"></span> Carregando...</div></div></div>
       </div>
     </div>
@@ -249,8 +270,8 @@
         <div id="bet-totais" style="margin-bottom:12px;"></div>
         <div class="table-wrap">
           <table>
-            <thead><tr><th>Nº Lib.</th><th>Início</th><th>Término</th><th>Traço</th><th>Vol (m³)</th><th>Local</th><th>Descrição</th><th>Operador</th><th>CP?</th><th>Ações</th></tr></thead>
-            <tbody id="betonadas-tbody"><tr><td colspan="8" class="empty">Carregando...</td></tr></tbody>
+            <thead><tr><th>Nº Lib.</th><th>Início</th><th>Término</th><th>Traço</th><th>Previsto (m³)</th><th>Aplicado (m³)</th><th>Local</th><th>Descrição</th><th>Operador</th><th>CP?</th><th>Ações</th></tr></thead>
+            <tbody id="betonadas-tbody"><tr><td colspan="11" class="empty">Carregando...</td></tr></tbody>
           </table>
         </div>
       </div>
@@ -260,7 +281,10 @@
     <div class="page" id="page-estoque">
       <div class="section-header">
         <div class="section-title">Estoque de <span>Materiais</span></div>
-        <button class="btn btn-primary" id="btn-nova-mov">+ Movimentação</button>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn btn-primary" id="btn-nova-mov">+ Movimentação</button>
+          <button class="btn btn-secondary" id="btn-saida-avulsa">Saída Avulsa Agregado</button>
+        </div>
       </div>
       <div id="estoque-alerts"></div>
       <div class="grid-3" id="estoque-cards"><div class="stat-card"><span class="spinner"></span> Carregando...</div></div>
@@ -300,7 +324,13 @@
           <div class="inline-row no-print" style="margin-bottom:16px;">
             <div class="form-group"><label>Período Início</label><input type="date" id="r-ini"></div>
             <div class="form-group"><label>Período Fim</label><input type="date" id="r-fim"></div>
-            <div style="display:flex;align-items:flex-end;"><button class="btn btn-secondary" onclick="gerarRelatorio()">Gerar</button></div>
+            <div class="form-group"><label>Estrutura</label>
+              <select id="r-estrutura"><option value="">Todas</option></select>
+            </div>
+            <div style="display:flex;align-items:flex-end;gap:8px;">
+              <button class="btn btn-secondary" id="btn-cadastrar-estrutura">Cadastrar Estrutura</button>
+              <button class="btn btn-secondary" onclick="gerarRelatorio()">Gerar</button>
+            </div>
           </div>
           <div id="rel-por-traco"></div>
         </div>
@@ -324,7 +354,8 @@
                 <th>Data Término</th>
                 <th>Hora Término</th>
                 <th>Traço</th>
-                <th>Vol (m³)</th>
+                <th>Previsto (m³)</th>
+                <th>Aplicado (m³)</th>
                 <th>Local / Estrutura</th>
                 <th>Descrição do Serviço</th>
                 <th>Operador</th>
@@ -414,8 +445,12 @@
       <div class="form-group"><label>Traço *</label><select id="b-traco" onchange="calcularConsumo()"><option value="">Selecione...</option></select></div>
     </div>
     <div class="grid-2">
-      <div class="form-group"><label>Local / Estrutura *</label><input id="b-local" placeholder="ex: Casa de Força"></div>
+      <div class="form-group"><label>Local / Estrutura *</label><input id="b-local" placeholder="ex: Casa de Força" list="datalist-estruturas"><datalist id="datalist-estruturas"></datalist></div>
       <div class="form-group"><label>Descrição do Serviço</label><input id="b-descricao" placeholder="ex: Laje de Fundo"></div>
+    </div>
+    <div class="grid-2">
+      <div class="form-group"><label>Volume Aplicado (m³) *</label><input type="number" id="b-volume" step="0.1" placeholder="1.0" oninput="calcularConsumo()"></div>
+      <div class="form-group"><label>Operador</label><input id="b-operador" placeholder="Nome do operador"></div>
     </div>
     <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:12px;margin-bottom:14px;">
       <div style="font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--text-dim);margin-bottom:10px;">⏱ Início da Concretagem</div>
@@ -424,7 +459,7 @@
         <div class="form-group" style="margin-bottom:0"><label>Hora Início *</label><input type="time" id="b-hora"></div>
       </div>
     </div>
-    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:12px;margin-bottom:14px;">
+    <div id="b-fim-wrapper" style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:12px;margin-bottom:14px;display:none;">
       <div style="font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--text-dim);margin-bottom:10px;">⏱ Término da Concretagem</div>
       <div class="grid-2">
         <div class="form-group" style="margin-bottom:0"><label>Data Término</label><input type="date" id="b-data-fim"></div>
@@ -432,12 +467,12 @@
       </div>
     </div>
     <div class="grid-2">
-      <div class="form-group"><label>Volume (m³) *</label><input type="number" id="b-volume" step="0.1" placeholder="1.0" oninput="calcularConsumo()"></div>
       <div class="form-group"><label>Operador</label><input id="b-operador" placeholder="Nome do operador"></div>
+      <div class="form-group"><label>Coletou CP?</label><select id="b-cp"><option value="nao">Não</option><option value="sim">Sim</option></select></div>
     </div>
     <div class="grid-2">
-      <div class="form-group"><label>Coletou CP?</label><select id="b-cp"><option value="nao">Não</option><option value="sim">Sim</option></select></div>
       <div class="form-group"><label>Nº do CP / Identificação</label><input id="b-cp-id" placeholder="ex: CP-001/2025"></div>
+      <div class="form-group"><label>&nbsp;</label><div style="height:100%"></div></div>
     </div>
     <div id="bet-consumo-preview" style="display:none;">
       <div class="divider"></div>
@@ -449,6 +484,33 @@
     <div class="modal-footer">
       <button class="btn btn-secondary" onclick="closeModal('modal-betonada')">Cancelar</button>
       <button class="btn btn-primary" onclick="salvarBetonada()">Registrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL FINALIZAR BETONADA -->
+<div class="modal-overlay" id="modal-finalizar-betonada">
+  <div class="modal">
+    <div class="modal-title">Finalizar Betonada</div>
+    <input type="hidden" id="bf-id">
+    <div class="form-group"><label>Data Término *</label><input type="date" id="bf-data-fim"></div>
+    <div class="form-group"><label>Hora Término *</label><input type="time" id="bf-hora-fim"></div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-finalizar-betonada')">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarFimBetonada()">Salvar Término</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ESTRUTURA -->
+<div class="modal-overlay" id="modal-estrutura">
+  <div class="modal">
+    <div class="modal-title">Cadastrar Estrutura</div>
+    <div class="form-group"><label>Nome da Estrutura *</label><input id="e-nome" placeholder="ex: Casa de Força"></div>
+    <div class="form-group"><label>Volume Previsto (m³)</label><input type="number" id="e-volume-previsto" placeholder="0.0" step="0.1"></div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-estrutura')">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarEstrutura()">Salvar</button>
     </div>
   </div>
 </div>
@@ -476,6 +538,7 @@
         <select id="m-tipo">
           <option value="entrada">Entrada</option>
           <option value="saida">Saída Manual</option>
+          <option value="saida_avulsa">Saída Avulsa Agregado</option>
           <option value="ajuste">Ajuste / Inventário</option>
         </select>
       </div>
@@ -517,13 +580,15 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db  = getFirestore(app);
 
-const COL_TRACOS    = "cc_tracos";
-const COL_BETONADAS = "cc_betonadas";
-const COL_MOVS      = "cc_movimentacoes";
-const COL_ESTOQUE   = "cc_estoque";
+const COL_TRACOS      = "cc_tracos";
+const COL_BETONADAS   = "cc_betonadas";
+const COL_MOVS        = "cc_movimentacoes";
+const COL_ESTOQUE     = "cc_estoque";
+const COL_ESTRUTURAS  = "cc_estruturas";
 
-let tracosCache  = [];
-let estoqueCache = {};
+let tracosCache      = [];
+let estoqueCache     = {};
+let estruturasCache  = [];
 
 const MATERIAIS = [
   {id:"cimento",     label:"Cimento",              unit:"kg", min:35000},
@@ -572,20 +637,39 @@ document.getElementById("btn-nova-betonada").addEventListener("click", () => {
   document.getElementById("b-traco").value = "";
   document.getElementById("b-cp").value    = "nao";
   document.getElementById("bet-consumo-preview").style.display = "none";
+  document.getElementById("b-fim-wrapper").style.display = "none";
   openModal("modal-betonada");
 });
 
 document.getElementById("btn-nova-mov").addEventListener("click", () => {
   document.getElementById("m-data").value = today();
   ["m-qtd","m-nota","m-resp","m-obs"].forEach(id => document.getElementById(id).value = "");
+  document.getElementById("m-tipo").value = "entrada";
+  document.getElementById("m-material").value = "cimento";
   openModal("modal-movimentacao");
+});
+
+document.getElementById("btn-saida-avulsa").addEventListener("click", () => {
+  document.getElementById("m-data").value = today();
+  ["m-qtd","m-nota","m-resp","m-obs"].forEach(id => document.getElementById(id).value = "");
+  document.getElementById("m-tipo").value = "saida_avulsa";
+  document.getElementById("m-material").value = "areia_nat";
+  openModal("modal-movimentacao");
+});
+
+document.getElementById("btn-cadastrar-estrutura").addEventListener("click", () => {
+  document.getElementById("e-nome").value = "";
+  document.getElementById("e-volume-previsto").value = "";
+  openModal("modal-estrutura");
 });
 
 async function initApp() {
   try {
     await loadEstoqueCache();
     await loadTracosCache();
+    await loadEstruturasCache();
     preencherSelectTracos();
+    preencherSelectEstruturas();
     loadDashboard();
   } catch(e) {
     showToast("Erro ao conectar com Firebase: " + e.message, true);
@@ -614,6 +698,9 @@ async function loadEstoqueCache() {
 async function setEstoque(mat, saldo) {
   await setDoc(doc(db, COL_ESTOQUE, mat), { saldo, mat, updatedAt: serverTimestamp() }, { merge: true });
   estoqueCache[mat] = saldo;
+  if(document.getElementById("page-dashboard").classList.contains("active")) {
+    loadDashboard();
+  }
 }
 
 async function loadTracosCache() {
@@ -633,6 +720,45 @@ function preencherSelectTracos() {
   });
 }
 
+async function loadEstruturasCache() {
+  const snap = await getDocs(query(collection(db, COL_ESTRUTURAS), orderBy("nome")));
+  estruturasCache = [];
+  snap.forEach(d => estruturasCache.push({ id: d.id, ...d.data() }));
+}
+
+function preencherSelectEstruturas() {
+  const sel = document.getElementById("r-estrutura");
+  const list = document.getElementById("datalist-estruturas");
+  if(sel) {
+    const cur = sel.value;
+    sel.innerHTML = `<option value="">Todas</option>` + estruturasCache.map(e => `<option value="${e.nome}">${e.nome}</option>`).join("");
+    sel.value = cur;
+  }
+  if(list) {
+    list.innerHTML = estruturasCache.map(e => `<option value="${e.nome}">`).join("");
+  }
+}
+
+window.salvarEstrutura = async function() {
+  const nome = document.getElementById("e-nome").value.trim();
+  if(!nome) { showToast("Preencha o nome da estrutura!", true); return; }
+  if(estruturasCache.find(e => e.nome.toLowerCase() === nome.toLowerCase())) { showToast("Estrutura já cadastrada!", true); return; }
+  try {
+    await addDoc(collection(db, COL_ESTRUTURAS), {
+      nome,
+      volumePrevisto: parseFloat(document.getElementById("e-volume-previsto").value)||0,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    });
+    showToast("Estrutura cadastrada!");
+    closeModal("modal-estrutura");
+    await loadEstruturasCache();
+    preencherSelectEstruturas();
+  } catch(e) {
+    showToast("Erro: " + e.message, true);
+  }
+};
+
 window.loadDashboard = async function() {
   try {
     const hoje = new Date(); hoje.setHours(0,0,0,0);
@@ -650,13 +776,22 @@ window.loadDashboard = async function() {
     MATERIAIS.forEach(m => { if(m.min>0 && (estoqueCache[m.id]||0) < m.min) alertas++; });
     document.getElementById("d-alertas").textContent = alertas;
 
+    const siloSaldo = estoqueCache['cimento']||0;
+    const siloPct = Math.max(0, Math.min(100, (siloSaldo / 80000) * 100));
+    const siloTons = fmt(siloSaldo/1000, 1);
+    const siloCard = document.getElementById("dash-silo-card");
+    if(siloCard) {
+      siloCard.querySelector(".silo-fill").style.height = siloPct + "%";
+      siloCard.querySelector(".silo-label").textContent = `${siloTons} t / 80 t`;
+    }
+
     const estoqueDiv = document.getElementById("dash-estoque-list");
     estoqueDiv.innerHTML = "";
     MATERIAIS.forEach(m => {
       const saldo = estoqueCache[m.id]||0;
       const temMin = m.min > 0;
-      const pct = temMin ? Math.min(100,(saldo/(m.min*3))*100) : 100;
-      const cor = temMin ? (saldo<m.min?"var(--red)":saldo<m.min*1.5?"var(--accent)":"var(--green)") : "var(--green)";
+      const pct = temMin ? Math.max(0, Math.min(100,(saldo/(m.min*3))*100)) : (saldo <= 0 ? 0 : 100);
+      const cor = saldo <= 0 ? "var(--red)" : (temMin ? (saldo < m.min ? "var(--red)" : saldo < m.min*1.5 ? "var(--accent)" : "var(--green)") : "var(--green)");
       estoqueDiv.innerHTML += `<div style="margin-bottom:12px;">
         <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
           <span>${m.label}</span><span style="font-weight:600;color:${cor}">${fmt(saldo,0)} ${m.unit}</span>
@@ -801,10 +936,14 @@ window.loadBetonadas = async function() {
       <td>${fmtDT(dt,b.hora)}</td>
       <td>${fmtDT(b.dataFim||dt,b.horaFim)||"—"}</td>
       <td><strong>${tr?tr.codigo:"—"}</strong></td>
+      <td style="color:var(--accent);font-weight:600">${fmt((estruturasCache.find(x=>x.nome.toLowerCase()===(b.local||"").toLowerCase())||{}).volumePrevisto||0)} m³</td>
       <td style="color:var(--accent);font-weight:600">${fmt(b.volume)} m³</td>
       <td>${b.local||"—"}</td><td>${b.descricao||"—"}</td><td>${b.operador||"—"}</td>
       <td>${b.cp==="sim"?'<span class="badge badge-green">Sim</span>':'<span class="badge badge-red">Não</span>'}</td>
-      <td><button class="btn btn-danger btn-sm" onclick="excluirBetonada('${b.id}')">🗑</button></td>
+      <td style="white-space:nowrap;display:flex;gap:6px;flex-wrap:wrap;">
+        ${!b.dataFim && !b.horaFim ? `<button class="btn btn-secondary btn-sm" onclick="finalizarBetonada('${b.id}')">Finalizar</button>` : ''}
+        <button class="btn btn-danger btn-sm" onclick="excluirBetonada('${b.id}')">🗑</button>
+      </td>
     </tr>`;
   });
   document.getElementById("bet-totais").innerHTML = count
@@ -899,6 +1038,28 @@ window.salvarBetonada = async function() {
   } catch(e) { showToast("Erro: "+e.message, true); }
 };
 
+window.finalizarBetonada = function(id) {
+  document.getElementById("bf-id").value = id;
+  document.getElementById("bf-data-fim").value = today();
+  document.getElementById("bf-hora-fim").value = nowTime();
+  openModal("modal-finalizar-betonada");
+};
+
+window.salvarFimBetonada = async function() {
+  const id      = document.getElementById("bf-id").value;
+  const dataFim = document.getElementById("bf-data-fim").value;
+  const horaFim = document.getElementById("bf-hora-fim").value;
+  if(!id || !dataFim || !horaFim) { showToast("Preencha data e hora de término!", true); return; }
+  try {
+    await updateDoc(doc(db, COL_BETONADAS, id), {
+      dataFim, horaFim, updatedAt: serverTimestamp()
+    });
+    showToast("Betonada finalizada!");
+    closeModal("modal-finalizar-betonada");
+    loadBetonadas();
+  } catch(e) { showToast("Erro: "+e.message, true); }
+};
+
 window.excluirBetonada = async function(id) {
   if(!confirm("Excluir este registro?\n\nATENÇÃO: O estoque NÃO será revertido automaticamente.")) return;
   await deleteDoc(doc(db,COL_BETONADAS,id));
@@ -914,8 +1075,8 @@ window.loadEstoque = async function() {
   MATERIAIS.forEach(m => {
     const saldo  = estoqueCache[m.id]||0;
     const temMin = m.min > 0;
-    const pct    = temMin ? Math.min(100,(saldo/(m.min*3))*100) : 100;
-    const cor    = temMin ? (saldo<m.min?"var(--red)":saldo<m.min*1.5?"var(--accent)":"var(--green)") : "var(--green)";
+    const pct    = temMin ? Math.max(0, Math.min(100,(saldo/(m.min*3))*100)) : (saldo <= 0 ? 0 : 100);
+    const cor    = saldo <= 0 ? "var(--red)" : (temMin ? (saldo < m.min ? "var(--red)" : saldo < m.min*1.5 ? "var(--accent)" : "var(--green)") : "var(--green)");
     if(temMin && saldo < m.min)
       alertDiv.innerHTML += `<div class="alert alert-danger">⚠️ Estoque baixo: <strong>${m.label}</strong> — ${fmt(saldo,0)} ${m.unit} (mínimo: ${fmt(m.min,0)} ${m.unit})</div>`;
     div.innerHTML += `<div class="stat-card">
@@ -932,6 +1093,7 @@ window.loadEstoque = async function() {
   const tipos = {
     entrada:    '<span class="badge badge-green">Entrada</span>',
     saida:      '<span class="badge badge-red">Saída</span>',
+    saida_avulsa:'<span class="badge badge-red">Saída Avulsa</span>',
     saida_auto: '<span class="badge badge-blue">Auto</span>',
     ajuste:     '<span class="badge badge-yellow">Ajuste</span>',
   };
@@ -979,6 +1141,7 @@ window.salvarMovimentacao = async function() {
 window.gerarRelatorio = async function() {
   const ini  = document.getElementById("r-ini").value;
   const fim  = document.getElementById("r-fim").value;
+  const estruturaFilter = document.getElementById("r-estrutura").value.trim().toLowerCase();
   const snap = await getDocs(query(collection(db,COL_BETONADAS), orderBy("data")));
   const porTraco={};
   let totalVol=0;
@@ -989,6 +1152,7 @@ window.gerarRelatorio = async function() {
     const b = { id:d.id, ...d.data() };
     if(ini && b.data < ini) return;
     if(fim && b.data > fim) return;
+    if(estruturaFilter && String(b.local||"").toLowerCase() !== estruturaFilter) return;
     const vol = parseFloat(b.volume)||0;
     totalVol += vol;
     betonadas.push(b);
@@ -1049,6 +1213,7 @@ window.gerarRelatorio = async function() {
         <td>${fmtD(b.dataFim)}</td>
         <td>${b.horaFim||"—"}</td>
         <td><strong>${t?t.codigo:"—"}</strong></td>
+        <td style="color:var(--accent);font-weight:600;text-align:center">${fmt((estruturasCache.find(x=>x.nome.toLowerCase()===(b.local||"").toLowerCase())||{}).volumePrevisto||0)} m³</td>
         <td style="color:var(--accent);font-weight:600;text-align:center">${fmt(b.volume)} m³</td>
         <td>${b.local||"—"}</td>
         <td>${b.descricao||"—"}</td>
@@ -1059,7 +1224,7 @@ window.gerarRelatorio = async function() {
       </tr>`;
     }).join("") +
     `<tr style="font-weight:700;border-top:2px solid var(--border);background:var(--surface)">
-      <td colspan="6" style="text-align:right;padding-right:8px;">TOTAL</td>
+      <td colspan="7" style="text-align:right;padding-right:8px;">TOTAL</td>
       <td style="color:var(--accent);font-weight:800;text-align:center">${fmt(totalVol)} m³</td>
       <td colspan="6" style="color:var(--text-dim);font-size:12px;">${betonadas.length} betonada(s)</td>
     </tr>`;
