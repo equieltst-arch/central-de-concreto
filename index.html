@@ -1089,7 +1089,27 @@ document.getElementById("r-fim").value = today();
 
 // ── IMPORTAR TRAÇOS DA TABELA PCH
 document.getElementById("btn-importar-tracos").addEventListener("click", () => {
-  if(!confirm("Importar os 3 traços da Tabela de Traços PCH Lebon Régis (Rev.00)?\n\nTraços que serão cadastrados:\n• 9.28.1.B.00 — Classe D, fck 9 MPa\n• 9.28 ARGAM — Classe C (Argamassa), fck 9 MPa\n• 20.28.1.B.00 — Classe B, fck 20 MPa")) return;
+  if(!confirm(
+    "Importar os 3 traços da Tabela de Traços PCH Lebon Régis (Rev.00)?\n\n" +
+    "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n" +
+    "9.28.1.B.00 — Classe D | fck 9 MPa | Dmáx 12,5mm\n" +
+    "  Cimento: 231 kg | Água: 185 L\n" +
+    "  Areia Natural: 255 kg | Areia Artificial: 689 kg\n" +
+    "  Pedrisco: 162 kg | Brita 1 (12,5mm): 916 kg\n" +
+    "  Aditivo Plastif.: 1,85 kg | Slump: 12±2 cm\n\n" +
+    "9.28 ARGAM — Classe C | fck 9 MPa | Dmáx 4,8mm\n" +
+    "  Cimento: 373 kg | Água: 299 L\n" +
+    "  Areia Natural: 412 kg | Areia Artificial: 1.114 kg\n" +
+    "  Pedrisco: 0 kg | Brita: 0 kg\n" +
+    "  Aditivo Plastif.: 2,98 kg | Slump: FLUIDO\n\n" +
+    "20.28.1.B.00 — Classe B | fck 20 MPa | Dmáx 12,5mm\n" +
+    "  Cimento: 325 kg | Água: 185 L\n" +
+    "  Areia Natural: 244 kg | Areia Artificial: 658 kg\n" +
+    "  Pedrisco: 155 kg | Brita 1 (12,5mm): 876 kg\n" +
+    "  Aditivo Plastif.: 2,59 kg | Slump: 12±2 cm\n" +
+    "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n" +
+    "Traços já existentes serão ignorados."
+  )) return;
   importarTracosTabela();
 });
 
