@@ -834,7 +834,7 @@ window.calcularConsumo = function() {
     {mat:"areia_nat", label:"Areia Natural",    val:(t.areiaNat||0)*vol},
     {mat:"areia_art", label:"Areia Artificial", val:(t.areiaArt||0)*vol},
     {mat:"pedrisco",  label:"Pedrisco",         val:(t.pedrisco||0)*vol},
-    {mat:matBrita,    label:"Brita",            val:(t.brita||0)*vol},
+    {mat:matBrita,    label:(MATERIAIS.find(x=>x.id===matBrita)||{label:"Brita"}).label, val:(t.brita||0)*vol},
     {mat:"agua",      label:"Água",             val:(t.agua||0)*vol},
   ].filter(c => c.val > 0);
   if(t.aditivoRet) consumos.push({mat:"aditivo_ret",label:"Adt. Retardador",val:t.aditivoRet*vol});
