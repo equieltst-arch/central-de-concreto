@@ -227,8 +227,13 @@
                   CAP.<span style="color:#fff;margin-left:6px;">80 t</span>
                 </div>
               </div>
-              <div id="hint" style="position:absolute;bottom:52px;right:14px;font-size:10px;font-family:monospace;color:rgba(224,230,239,.3);z-index:9;pointer-events:none;text-align:right;line-height:1.9;">
+              <div id="hint" style="position:absolute;bottom:72px;right:14px;font-size:10px;font-family:monospace;color:rgba(224,230,239,.3);z-index:9;pointer-events:none;text-align:right;line-height:1.9;">
                 Arraste · Scroll zoom<br>Botão direito pan
+              </div>
+              <div style="position:absolute;bottom:60px;left:14px;font-size:11px;font-family:monospace;color:#f0e2a0;z-index:9;pointer-events:none;line-height:1.6;">
+                <div>AREIA</div>
+                <div style="margin-top:4px;color:#b0c4f8;">BRITA</div>
+                <div style="margin-top:4px;color:#d8c18a;">PEDRISCO</div>
               </div>
               <div id="silo-volume-label" class="silo-volume-label">Carregando...</div>
               <div style="position:absolute;bottom:12px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:9;">
@@ -1208,6 +1213,7 @@ window.gerarRelatorio = async function() {
   const snap = await getDocs(query(collection(db,COL_BETONADAS), orderBy("data")));
   const porTraco={};
   let totalVol=0;
+  let totalPrevisto=0;
   const consumoMat={};
   const betonadas=[];
 
@@ -1218,11 +1224,14 @@ window.gerarRelatorio = async function() {
     if(liberacaoFilter && !String(b.liberacao||"").toLowerCase().includes(liberacaoFilter)) return;
     if(estruturaFilter && String(b.local||"").toLowerCase() !== estruturaFilter) return;
     const vol = parseFloat(b.volume)||0;
+    const previsto = parseFloat(b.volumePrevisto) || (estruturasCache.find(x=>x.nome.toLowerCase()===(b.local||"").toLowerCase())||{}).volumePrevisto || 0;
     totalVol += vol;
+    totalPrevisto += previsto;
     betonadas.push(b);
-    if(!porTraco[b.tracoid]) porTraco[b.tracoid]={count:0,vol:0};
+    if(!porTraco[b.tracoid]) porTraco[b.tracoid]={count:0,vol:0,previsto:0};
     porTraco[b.tracoid].count++;
     porTraco[b.tracoid].vol += vol;
+    porTraco[b.tracoid].previsto += previsto;
     const t = tracosCache.find(x => x.id === b.tracoid);
     if(t) {
       const mb = t.tipoBrita||"brita1";
@@ -1238,12 +1247,28 @@ window.gerarRelatorio = async function() {
   const div1 = document.getElementById("rel-por-traco");
   if(!Object.keys(porTraco).length) { div1.innerHTML='<div class="empty">Nenhum dado no período.</div>'; }
   else {
-    div1.innerHTML = `<table><thead><tr><th>Traço</th><th>Betonadas</th><th>Volume (m³)</th><th>%</th></tr></thead><tbody>`+
+    div1.innerHTML = `<table><thead><tr><th>Traço</th><th>Betonadas</th><th>Volume (m³)</th><th>% Previsto</th></tr></thead><tbody>`+
       Object.entries(porTraco).map(([tid,v]) => {
         const t = tracosCache.find(x => x.id===tid);
-        return `<tr><td><strong>${t?t.codigo:"—"}</strong></td><td>${v.count}</td><td>${fmt(v.vol)}</td><td>${totalVol?fmt(v.vol/totalVol*100)+"%":"—"}</td></tr>`;
+        // calcular porcentagem vs previsto (quando houver) ou vs total
+        let perc = "—";
+        if (v.previsto && v.previsto > 0) {
+          const pctRaw = (v.vol / v.previsto) * 100;
+          const pct = Math.abs(v.vol - v.previsto) < 0.0005 ? 100 : pctRaw;
+          const pctRounded = Math.round(pct * 10) / 10; // uma casa decimal
+          perc = (Math.abs(pctRounded - Math.round(pctRounded)) < 0.001)
+            ? `${Math.round(pctRounded)}%`
+            : `${pctRounded}%`;
+        } else if (totalVol) {
+          const pctRaw = (v.vol / totalVol) * 100;
+          const pctRounded = Math.round(pctRaw * 10) / 10;
+          perc = (Math.abs(pctRounded - Math.round(pctRounded)) < 0.001)
+            ? `${Math.round(pctRounded)}%`
+            : `${pctRounded}%`;
+        }
+        return `<tr><td><strong>${t?t.codigo:"—"}</strong></td><td>${v.count}</td><td>${fmt(v.vol)}</td><td>${perc}</td></tr>`;
       }).join("")+
-      `<tr style="font-weight:600;border-top:2px solid #ccc"><td>TOTAL</td><td>${Object.values(porTraco).reduce((a,b)=>a+b.count,0)}</td><td>${fmt(totalVol)}</td><td>100%</td></tr>`+
+      `<tr style="font-weight:600;border-top:2px solid #ccc"><td>TOTAL</td><td>${Object.values(porTraco).reduce((a,b)=>a+b.count,0)}</td><td>${fmt(totalVol)}</td><td>${totalPrevisto ? fmt((totalVol / totalPrevisto) * 100) + "%" : "100%"}</td></tr>`+
       `</tbody></table>`;
   }
 
@@ -1398,6 +1423,9 @@ initApp();
   const siloWire = new THREE.MeshStandardMaterial({color:0x4a90d9, wireframe:true, metalness:0.5, roughness:0.3});
   const fillMat = new THREE.MeshStandardMaterial({color:0x8a8d97, roughness:0.85, transparent:true, opacity:0.75});
   const groundMat = new THREE.MeshStandardMaterial({color:0x161b22, roughness:1.0});
+  const sandMat = new THREE.MeshStandardMaterial({color:0xe1c072, roughness:0.8, metalness:0.05});
+  const britaMat = new THREE.MeshStandardMaterial({color:0x8f95a3, roughness:0.75, metalness:0.12});
+  const pedriscoMat = new THREE.MeshStandardMaterial({color:0xc0b085, roughness:0.8, metalness:0.05});
 
   const grp = new THREE.Group();
   scene.add(grp);
@@ -1407,6 +1435,48 @@ initApp();
   gnd.position.y = -5.1;
   gnd.receiveShadow = true;
   scene.add(gnd);
+
+  const sandMesh = new THREE.Mesh(new THREE.ConeGeometry(1.5, 0.8, 32), sandMat);
+  sandMesh.rotation.x = Math.PI;
+  sandMesh.position.set(-4.2, -4.7 + 0.4, -1.5);
+  sandMesh.castShadow = true;
+  scene.add(sandMesh);
+
+  const britaGroup = new THREE.Group();
+  for (let i = 0; i < 6; i++) {
+    const stone = new THREE.Mesh(new THREE.DodecahedronGeometry(0.24, 0), britaMat);
+    const angle = (i / 6) * Math.PI * 2;
+    const radius = 0.9 + Math.random() * 0.5;
+    const baseX = Math.cos(angle) * radius + 4.2;
+    const baseZ = Math.sin(angle) * radius - 1.2;
+    stone.position.set(baseX, -4.7 + 0.2, baseZ);
+    stone.userData.baseX = baseX;
+    stone.userData.baseZ = baseZ;
+    stone.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+    const size = 0.6 + Math.random() * 0.4;
+    stone.scale.set(size, size, size);
+    stone.castShadow = true;
+    britaGroup.add(stone);
+  }
+  scene.add(britaGroup);
+
+  const pedriscoGroup = new THREE.Group();
+  for (let i = 0; i < 5; i++) {
+    const rock = new THREE.Mesh(new THREE.OctahedronGeometry(0.16, 0), pedriscoMat);
+    const angle = (i / 5) * Math.PI * 2;
+    const radius = 0.8 + Math.random() * 0.4;
+    const baseX = Math.cos(angle) * radius - 4.5;
+    const baseZ = Math.sin(angle) * radius + 2.0;
+    rock.position.set(baseX, -4.7 + 0.1, baseZ);
+    rock.userData.baseX = baseX;
+    rock.userData.baseZ = baseZ;
+    rock.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+    const size = 0.35 + Math.random() * 0.25;
+    rock.scale.set(size, size, size);
+    rock.castShadow = true;
+    pedriscoGroup.add(rock);
+  }
+  scene.add(pedriscoGroup);
 
   function add(geo, mat, x, y, z, shadow = true) {
     const mesh = new THREE.Mesh(geo, mat);
@@ -1495,6 +1565,13 @@ initApp();
 
   function updateSiloFill(){
     const stock = (window.getEstoqueCache && window.getEstoqueCache()['cimento']) || 0;
+    const sandStock = ((window.getEstoqueCache && window.getEstoqueCache()['areia_nat']) || 0)
+                    + ((window.getEstoqueCache && window.getEstoqueCache()['areia_art']) || 0);
+    const britaStock = ((window.getEstoqueCache && window.getEstoqueCache()['brita0']) || 0)
+                     + ((window.getEstoqueCache && window.getEstoqueCache()['brita1']) || 0)
+                     + ((window.getEstoqueCache && window.getEstoqueCache()['brita2']) || 0);
+    const pedriscoStock = ((window.getEstoqueCache && window.getEstoqueCache()['pedrisco']) || 0);
+
     const pct = Math.max(0, Math.min(100, (stock / 80000) * 100));
     const scale = Math.max(0.05, pct / 100);
     fillMesh.scale.y = scale;
@@ -1502,6 +1579,41 @@ initApp();
     const label = document.getElementById('silo-volume-label');
     if(label) label.textContent = `${(stock/1000).toFixed(1)} t / 80 t`;
     fillMat.color.set(stock <= 0 ? 0x555555 : 0x8a8d97);
+
+    const sandLevel = Math.max(0.15, Math.min(1, sandStock / 20000));
+    sandMesh.scale.set(1, 0.4 + sandLevel * 0.9, 1);
+    sandMesh.position.y = -4.8 + 0.5 * sandLevel;
+    sandMat.color.set(sandStock > 0 ? 0xe1c072 : 0x786643);
+    sandMat.transparent = true;
+    sandMat.opacity = 0.95;
+    sandMesh.visible = sandStock > 10;
+
+    const britaLevel = Math.max(0.15, Math.min(1, britaStock / 20000));
+    britaGroup.children.forEach((stone) => {
+      const scaleFactor = 0.4 + britaLevel * 0.9;
+      stone.scale.set(scaleFactor, scaleFactor, scaleFactor);
+      const baseY = -4.7;
+      stone.position.y = baseY + 0.25 * britaLevel;
+      stone.position.x = stone.userData.baseX * (0.8 + 0.2 * britaLevel);
+      stone.position.z = stone.userData.baseZ * (0.8 + 0.2 * britaLevel);
+    });
+    britaMat.color.set(britaStock > 0 ? 0x8f95a3 : 0x4b4f56);
+    britaMat.transparent = true;
+    britaMat.opacity = 0.95;
+    britaGroup.visible = britaStock > 10;
+
+    const pedriscoLevel = Math.max(0.15, Math.min(1, pedriscoStock / 12000));
+    pedriscoGroup.children.forEach((rock) => {
+      const scaleFactor = 0.35 + pedriscoLevel * 0.7;
+      rock.scale.set(scaleFactor, scaleFactor, scaleFactor);
+      rock.position.y = -4.6 + 0.2 * pedriscoLevel;
+      rock.position.x = rock.userData.baseX * (0.85 + 0.2 * pedriscoLevel);
+      rock.position.z = rock.userData.baseZ * (0.85 + 0.2 * pedriscoLevel);
+    });
+    pedriscoMat.color.set(pedriscoStock > 0 ? 0xc0b085 : 0x6b5f46);
+    pedriscoMat.transparent = true;
+    pedriscoMat.opacity = 0.95;
+    pedriscoGroup.visible = pedriscoStock > 10;
   }
   window.updateSiloFill = updateSiloFill;
   updateSiloFill();
