@@ -590,6 +590,7 @@
   <div class="modal">
     <div class="modal-title">Finalizar Betonada</div>
     <input type="hidden" id="bf-id">
+    <input type="hidden" id="bf-liberacao-flag" value="0">
     <div class="form-group"><label>Data Término *</label><input type="date" id="bf-data-fim"></div>
     <div class="form-group"><label>Hora Término *</label><input type="time" id="bf-hora-fim"></div>
     <div class="modal-footer">
@@ -662,7 +663,7 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
-  getFirestore, collection, doc, addDoc, updateDoc, deleteDoc,
+  getFirestore, collection, doc, getDoc, addDoc, updateDoc, deleteDoc,
   setDoc, getDocs, query, orderBy, where, limit, Timestamp, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
@@ -1160,8 +1161,10 @@ window.loadBetonadas = async function() {
       <td style="color:var(--accent);font-weight:600">${fmt(b.volume)} m³</td>
       <td>${b.local||"—"}</td><td>${b.descricao||"—"}</td><td>${b.operador||"—"}</td>
       <td>${b.cp==="sim"?'<span class="badge badge-green">Sim</span>':'<span class="badge badge-red">Não</span>'}</td>
-      <td style="white-space:nowrap;display:flex;gap:6px;flex-wrap:wrap;">
-        ${guestMode ? '—' : `${!b.dataFim && !b.horaFim ? `<button class="btn btn-secondary btn-sm" onclick="finalizarBetonada('${b.id}')">Finalizar</button>` : ''}<button class="btn btn-danger btn-sm" onclick="excluirBetonada('${b.id}')">🗑</button>`}
+      <td style="white-space:nowrap;">
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          ${guestMode ? '—' : `${!b.dataFim && !b.horaFim ? `<button class="btn btn-secondary btn-sm" onclick="finalizarLiberacao('${b.liberacao||""}','${b.id}')">Finalizar</button>` : ''}<button class="btn btn-danger btn-sm" onclick="excluirBetonada('${b.id}')">🗑</button>`}
+        </div>
       </td>
     </tr>`;
   });
@@ -1288,24 +1291,36 @@ window.salvarBetonada = async function() {
   } catch(e) { showToast("Erro: "+e.message, true); }
 };
 
-window.finalizarBetonada = function(id) {
+window.finalizarLiberacao = function(liberacao, fallbackId) {
   if(guestMode) { showToast("Modo visitante: edição bloqueada.", true); return; }
-  document.getElementById("bf-id").value = id;
+  document.getElementById("bf-id").value = liberacao || fallbackId;
+  document.getElementById("bf-liberacao-flag").value = liberacao ? "1" : "0";
   document.getElementById("bf-data-fim").value = today();
   document.getElementById("bf-hora-fim").value = nowTime();
+  const titulo = liberacao ? `Finalizar Liberação: ${liberacao}` : "Finalizar Betonada";
+  document.querySelector("#modal-finalizar-betonada .modal-title").textContent = titulo;
   openModal("modal-finalizar-betonada");
 };
 
 window.salvarFimBetonada = async function() {
-  const id      = document.getElementById("bf-id").value;
-  const dataFim = document.getElementById("bf-data-fim").value;
-  const horaFim = document.getElementById("bf-hora-fim").value;
-  if(!id || !dataFim || !horaFim) { showToast("Preencha data e hora de término!", true); return; }
+  const idOrLib  = document.getElementById("bf-id").value;
+  const isPorLib = document.getElementById("bf-liberacao-flag").value === "1";
+  const dataFim  = document.getElementById("bf-data-fim").value;
+  const horaFim  = document.getElementById("bf-hora-fim").value;
+  if(!idOrLib || !dataFim || !horaFim) { showToast("Preencha data e hora de término!", true); return; }
   try {
-    await updateDoc(doc(db, COL_BETONADAS, id), {
-      dataFim, horaFim, updatedAt: serverTimestamp()
-    });
-    showToast("Betonada finalizada!");
+    if(isPorLib) {
+      const snap = await getDocs(query(collection(db, COL_BETONADAS), where("liberacao", "==", idOrLib)));
+      const lote = [];
+      snap.forEach(d => { const b = d.data(); if(!b.dataFim && !b.horaFim) lote.push(d.id); });
+      for(const bid of lote) {
+        await updateDoc(doc(db, COL_BETONADAS, bid), { dataFim, horaFim, updatedAt: serverTimestamp() });
+      }
+      showToast(`Liberação "${idOrLib}" finalizada! (${lote.length} betonada(s) atualizada(s))`);
+    } else {
+      await updateDoc(doc(db, COL_BETONADAS, idOrLib), { dataFim, horaFim, updatedAt: serverTimestamp() });
+      showToast("Betonada finalizada!");
+    }
     closeModal("modal-finalizar-betonada");
     loadBetonadas();
   } catch(e) { showToast("Erro: "+e.message, true); }
@@ -1313,10 +1328,36 @@ window.salvarFimBetonada = async function() {
 
 window.excluirBetonada = async function(id) {
   if(guestMode) { showToast("Modo visitante: edição bloqueada.", true); return; }
-  if(!confirm("Excluir este registro?\n\nATENÇÃO: O estoque NÃO será revertido automaticamente.")) return;
-  await deleteDoc(doc(db,COL_BETONADAS,id));
-  showToast("Registro excluído.");
-  loadBetonadas();
+  if(!confirm("Excluir esta betonada?\n\nOs materiais consumidos serão devolvidos ao estoque automaticamente.")) return;
+  try {
+    const snap = await getDoc(doc(db, COL_BETONADAS, id));
+    if(!snap.exists()) { showToast("Registro não encontrado.", true); return; }
+    const b = snap.data();
+    const consumos = b.realConsumos || null;
+
+    // Estorna estoque se houver consumos registrados
+    if(consumos && Object.keys(consumos).length) {
+      await loadEstoqueCache();
+      for(const [mat, qtd] of Object.entries(consumos)) {
+        const novoSaldo = (estoqueCache[mat] || 0) + parseFloat(qtd);
+        await setEstoque(mat, novoSaldo);
+        await addDoc(collection(db, COL_MOVS), {
+          material: mat,
+          tipo: "entrada_estorno",
+          qtd: parseFloat(qtd),
+          data: today(),
+          nota: "Estorno - exclusão de betonada",
+          obs: `Betonada excluída (ID: ${id})`,
+          createdAt: serverTimestamp(),
+        });
+      }
+    }
+
+    await deleteDoc(doc(db, COL_BETONADAS, id));
+    showToast("Betonada excluída e estoque revertido!");
+    loadBetonadas();
+    loadEstoque();
+  } catch(e) { showToast("Erro ao excluir: " + e.message, true); }
 };
 
 window.loadEstoque = async function() {
