@@ -188,6 +188,7 @@
       <div class="form-group"><label>E-mail</label><input type="email" id="login-email" placeholder="seu@empresa.com" required></div>
       <div class="form-group"><label>Senha</label><input type="password" id="login-password" placeholder="••••••••" required></div>
       <button class="btn btn-primary btn-full" id="btn-login" type="submit">Entrar</button>
+      <button class="btn btn-secondary btn-full" type="button" onclick="startGuestMode()">Ver produção</button>
     </form>
     <div style="margin-top:16px;font-size:12px;color:var(--text-dim);">Usuário e senha são cadastrados manualmente no console do Firebase.</div>
   </div>
@@ -349,12 +350,35 @@
       <div class="divider"></div>
       <div class="card">
         <div class="card-title">Histórico de Movimentações</div>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>Data</th><th>Material</th><th>Tipo</th><th>Qtd (kg/L)</th><th>Nota/Ref.</th><th>Responsável</th><th>Obs</th></tr></thead>
-            <tbody id="movimentacoes-tbody"><tr><td colspan="7" class="empty">Carregando...</td></tr></tbody>
-          </table>
-        </div>
+      <div class="filter-row" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;align-items:center;">
+        <select id="filter-mov-material" onchange="applyMovFilter()" style="min-width:180px;padding:8px;">
+          <option value="all">Todos os materiais</option>
+          <option value="cimento">Cimento</option>
+          <option value="areia_nat">Areia Natural</option>
+          <option value="areia_art">Areia Artificial</option>
+          <option value="brita0">Brita 0 (Pedrisco)</option>
+          <option value="brita1">Brita 1 (12,5mm)</option>
+          <option value="brita2">Brita 2 (19mm)</option>
+          <option value="agua">Água</option>
+          <option value="aditivo_ret">Aditivo Retardador</option>
+          <option value="aditivo_pla">Aditivo Plastificante</option>
+        </select>
+        <select id="filter-mov-tipo" onchange="applyMovFilter()" style="min-width:180px;padding:8px;">
+          <option value="all">Todos os tipos</option>
+          <option value="entrada">Entrada</option>
+          <option value="saida">Saída</option>
+          <option value="saida_avulsa">Saída Avulsa</option>
+          <option value="saida_auto">Auto</option>
+          <option value="ajuste">Ajuste</option>
+        </select>
+        <button class="btn btn-secondary btn-sm" type="button" onclick="clearMovFilter()">Limpar filtro</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Data</th><th>Material</th><th>Tipo</th><th>Qtd (kg/L)</th><th>Nota/Ref.</th><th>Responsável</th><th>Obs</th></tr></thead>
+          <tbody id="movimentacoes-tbody"><tr><td colspan="7" class="empty">Carregando...</td></tr></tbody>
+        </table>
+      </div>
       </div>
     </div>
 
@@ -658,6 +682,7 @@ const db  = getFirestore(app);
 
 let currentUser = null;
 let appInitialized = false;
+let guestMode = false;
 
 window.setVisibleScreen = function(screen) {
   ["login-screen","welcome-screen","app"].forEach(id => {
@@ -667,17 +692,6 @@ window.setVisibleScreen = function(screen) {
   });
   if(screen === "app") {
     document.getElementById("app").style.display = "flex";
-  }
-};
-
-window.updateAuthControls = function() {
-  const authControls = document.getElementById("auth-controls");
-  if(!authControls) return;
-  if(currentUser) {
-    document.getElementById("user-email").textContent = currentUser.email || "Usuário";
-    authControls.style.display = "flex";
-  } else {
-    authControls.style.display = "none";
   }
 };
 
@@ -694,11 +708,53 @@ window.login = async function() {
 
 window.logout = async function() {
   try {
+    if(guestMode) {
+      guestMode = false;
+      currentUser = null;
+      updateAuthControls();
+      window.setVisibleScreen("login-screen");
+      showToast("Modo visitante encerrado.");
+      return;
+    }
     await signOut(auth);
     window.setVisibleScreen("login-screen");
     showToast("Você saiu do sistema.");
   } catch(e) {
     showToast("Erro ao sair: " + e.message, true);
+  }
+};
+
+window.startGuestMode = function() {
+  guestMode = true;
+  currentUser = null;
+  updateAuthControls();
+  initApp().then(() => { appInitialized = true; }).catch(e => {
+    showToast("Falha ao carregar visualização: " + e.message, true);
+  });
+  window.setVisibleScreen("app");
+  setGuestMode(true);
+  window.showPage("dashboard");
+  showToast("Modo visitante ativado. Apenas visualização está disponível.");
+};
+
+window.setGuestMode = function(value) {
+  guestMode = value;
+  const hideIds = ["btn-novo-traco","btn-nova-betonada","btn-nova-mov","btn-saida-avulsa","btn-cadastrar-estrutura"];
+  hideIds.forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.style.display = value ? "none" : "inline-flex";
+  });
+  updateAuthControls();
+};
+
+window.updateAuthControls = function() {
+  const authControls = document.getElementById("auth-controls");
+  if(!authControls) return;
+  if(currentUser || guestMode) {
+    document.getElementById("user-email").textContent = getCurrentUserLabel();
+    authControls.style.display = "flex";
+  } else {
+    authControls.style.display = "none";
   }
 };
 
@@ -710,13 +766,15 @@ window.enterSystem = function() {
 
 onAuthStateChanged(auth, user => {
   currentUser = user;
+  if(user) guestMode = false;
   window.updateAuthControls();
   if(user) {
+    setGuestMode(false);
     if(!appInitialized) {
       initApp().then(() => { appInitialized = true; });
     }
     window.setVisibleScreen("welcome-screen");
-  } else {
+  } else if(!guestMode) {
     window.setVisibleScreen("login-screen");
   }
 });
@@ -729,6 +787,7 @@ const COL_ESTRUTURAS  = "cc_estruturas";
 
 let tracosCache      = [];
 let estoqueCache     = {};
+let movimentacoesCache = [];
 window.getEstoqueCache = () => estoqueCache;
 let estruturasCache  = [];
 
@@ -755,8 +814,16 @@ window.showToast = function(msg, err=false) {
 function fmt(n, dec=1) { return (parseFloat(n)||0).toFixed(dec); }
 function today()   { return new Date().toISOString().split("T")[0]; }
 function nowTime() { return new Date().toTimeString().slice(0,5); }
+function getCurrentUserLabel() {
+  if(currentUser) return currentUser.displayName || currentUser.email || "Usuário";
+  if(guestMode) return "Visitante";
+  return "";
+}
 
-window.openModal  = id => document.getElementById(id).classList.add("open");
+window.openModal  = id => {
+  if(guestMode) { showToast("Modo visitante: edição bloqueada.", true); return; }
+  document.getElementById(id).classList.add("open");
+};
 window.closeModal = id => document.getElementById(id).classList.remove("open");
 document.querySelectorAll(".modal-overlay").forEach(m => {
   m.addEventListener("click", e => { if(e.target === m) m.classList.remove("open"); });
@@ -778,6 +845,7 @@ document.getElementById("btn-nova-betonada").addEventListener("click", () => {
   document.getElementById("b-hora").value  = nowTime();
   document.getElementById("b-traco").value = "";
   document.getElementById("b-cp").value    = "nao";
+  document.getElementById("b-operador").value = getCurrentUserLabel();
   document.getElementById("bet-consumo-preview").style.display = "none";
   document.getElementById("b-fim-wrapper").style.display = "none";
   openModal("modal-betonada");
@@ -788,6 +856,7 @@ document.getElementById("btn-nova-mov").addEventListener("click", () => {
   ["m-qtd","m-nota","m-resp","m-obs"].forEach(id => document.getElementById(id).value = "");
   document.getElementById("m-tipo").value = "entrada";
   document.getElementById("m-material").value = "cimento";
+  document.getElementById("m-resp").value = getCurrentUserLabel();
   openModal("modal-movimentacao");
 });
 
@@ -796,6 +865,7 @@ document.getElementById("btn-saida-avulsa").addEventListener("click", () => {
   ["m-qtd","m-nota","m-resp","m-obs"].forEach(id => document.getElementById(id).value = "");
   document.getElementById("m-tipo").value = "saida_avulsa";
   document.getElementById("m-material").value = "areia_nat";
+  document.getElementById("m-resp").value = getCurrentUserLabel();
   openModal("modal-movimentacao");
 });
 
@@ -825,7 +895,10 @@ window.showPage = function(id) {
   const tabs = document.querySelectorAll(".nav-tab");
   const map  = {dashboard:0, tracos:1, betonadas:2, estoque:3, relatorios:4};
   if(map[id] !== undefined) tabs[map[id]].classList.add("active");
-  if(id === "dashboard") loadDashboard();
+  if(id === "dashboard") {
+    loadDashboard();
+    if(window.resizeSiloCanvas) window.resizeSiloCanvas();
+  }
   if(id === "tracos")    loadTracos();
   if(id === "betonadas") loadBetonadas();
   if(id === "estoque")   loadEstoque();
@@ -882,6 +955,7 @@ function preencherSelectEstruturas() {
 }
 
 window.salvarEstrutura = async function() {
+  if(guestMode) { showToast("Modo visitante: edição bloqueada.", true); return; }
   const nome = document.getElementById("e-nome").value.trim();
   if(!nome) { showToast("Preencha o nome da estrutura!", true); return; }
   if(estruturasCache.find(e => e.nome.toLowerCase() === nome.toLowerCase())) { showToast("Estrutura já cadastrada!", true); return; }
@@ -969,15 +1043,15 @@ window.loadTracos = async function() {
     return;
   }
   tracosCache.forEach(t => {
+    const actionButtons = guestMode
+      ? '—'
+      : `<button class="btn btn-secondary btn-sm" onclick="editarTraco('${t.id}')">✏️</button><button class="btn btn-danger btn-sm" onclick="excluirTraco('${t.id}')">🗑</button>`;
     tbody.innerHTML += `<tr>
       <td><strong>${t.codigo}</strong></td><td>${t.fck}</td>
       <td>${fmt(t.cimento,0)}</td>
       <td>${fmt((t.areiaNat||0)+(t.areiaArt||0),0)}<br><small style="color:var(--text-dim)">${fmt(t.areiaNat||0,0)}nat/${fmt(t.areiaArt||0,0)}art</small></td>
       <td>${fmt(t.brita,0)}</td><td>${fmt(t.agua,0)}</td><td>${fmt(t.aditivo,2)}</td><td>${t.slump||"—"}</td>
-      <td style="white-space:nowrap;">
-        <button class="btn btn-secondary btn-sm" onclick="editarTraco('${t.id}')">✏️</button>
-        <button class="btn btn-danger btn-sm" onclick="excluirTraco('${t.id}')">🗑</button>
-      </td>
+      <td style="white-space:nowrap;">${actionButtons}</td>
     </tr>`;
   });
 };
@@ -998,6 +1072,7 @@ function calcPreviewTraco() {
 });
 
 window.salvarTraco = async function() {
+  if(guestMode) { showToast("Modo visitante: edição bloqueada.", true); return; }
   const id = document.getElementById("traco-id").value;
   const data = {
     codigo:      document.getElementById("t-codigo").value.trim().toUpperCase(),
@@ -1026,6 +1101,7 @@ window.salvarTraco = async function() {
 };
 
 window.editarTraco = function(id) {
+  if(guestMode) { showToast("Modo visitante: edição bloqueada.", true); return; }
   const t = tracosCache.find(x => x.id === id);
   if(!t) return;
   document.getElementById("modal-traco-title").textContent = "Editar Traço";
@@ -1049,6 +1125,7 @@ window.editarTraco = function(id) {
 };
 
 window.excluirTraco = async function(id) {
+  if(guestMode) { showToast("Modo visitante: edição bloqueada.", true); return; }
   if(!confirm("Excluir este traço?")) return;
   await deleteDoc(doc(db,COL_TRACOS,id));
   showToast("Traço excluído!");
@@ -1084,8 +1161,7 @@ window.loadBetonadas = async function() {
       <td>${b.local||"—"}</td><td>${b.descricao||"—"}</td><td>${b.operador||"—"}</td>
       <td>${b.cp==="sim"?'<span class="badge badge-green">Sim</span>':'<span class="badge badge-red">Não</span>'}</td>
       <td style="white-space:nowrap;display:flex;gap:6px;flex-wrap:wrap;">
-        ${!b.dataFim && !b.horaFim ? `<button class="btn btn-secondary btn-sm" onclick="finalizarBetonada('${b.id}')">Finalizar</button>` : ''}
-        <button class="btn btn-danger btn-sm" onclick="excluirBetonada('${b.id}')">🗑</button>
+        ${guestMode ? '—' : `${!b.dataFim && !b.horaFim ? `<button class="btn btn-secondary btn-sm" onclick="finalizarBetonada('${b.id}')">Finalizar</button>` : ''}<button class="btn btn-danger btn-sm" onclick="excluirBetonada('${b.id}')">🗑</button>`}
       </td>
     </tr>`;
   });
@@ -1149,6 +1225,7 @@ window.calcularConsumo = function() {
 };
 
 window.salvarBetonada = async function() {
+  if(guestMode) { showToast("Modo visitante: edição bloqueada.", true); return; }
   const tracoid = document.getElementById("b-traco").value;
   const volume  = parseFloat(document.getElementById("b-volume").value)||0;
   const data_   = document.getElementById("b-data").value;
@@ -1186,7 +1263,7 @@ window.salvarBetonada = async function() {
       volumePrevisto: parseFloat(document.getElementById("b-volume-previsto").value) || 0,
       dataFim:   document.getElementById("b-data-fim").value,
       horaFim:   document.getElementById("b-hora-fim").value,
-      operador:  document.getElementById("b-operador").value.trim(),
+      operador:  document.getElementById("b-operador").value.trim() || getCurrentUserLabel(),
       cp:        document.getElementById("b-cp").value,
       cpId:      document.getElementById("b-cp-id").value.trim(),
       obs:       document.getElementById("b-obs").value.trim(),
@@ -1212,6 +1289,7 @@ window.salvarBetonada = async function() {
 };
 
 window.finalizarBetonada = function(id) {
+  if(guestMode) { showToast("Modo visitante: edição bloqueada.", true); return; }
   document.getElementById("bf-id").value = id;
   document.getElementById("bf-data-fim").value = today();
   document.getElementById("bf-hora-fim").value = nowTime();
@@ -1234,6 +1312,7 @@ window.salvarFimBetonada = async function() {
 };
 
 window.excluirBetonada = async function(id) {
+  if(guestMode) { showToast("Modo visitante: edição bloqueada.", true); return; }
   if(!confirm("Excluir este registro?\n\nATENÇÃO: O estoque NÃO será revertido automaticamente.")) return;
   await deleteDoc(doc(db,COL_BETONADAS,id));
   showToast("Registro excluído.");
@@ -1260,9 +1339,22 @@ window.loadEstoque = async function() {
     </div>`;
   });
   const snap  = await getDocs(query(collection(db,COL_MOVS), orderBy("createdAt","desc"), limit(80)));
+  movimentacoesCache = [];
+  snap.forEach(d => movimentacoesCache.push({ id: d.id, ...d.data() }));
+  renderMovimentacoes();
+}
+
+function renderMovimentacoes() {
   const tbody = document.getElementById("movimentacoes-tbody");
+  const materialFilter = document.getElementById("filter-mov-material").value;
+  const tipoFilter = document.getElementById("filter-mov-tipo").value;
+  const filtered = movimentacoesCache.filter(m => {
+    const matchMat = materialFilter === "all" || m.material === materialFilter;
+    const matchTipo = tipoFilter === "all" || m.tipo === tipoFilter;
+    return matchMat && matchTipo;
+  });
   tbody.innerHTML = "";
-  let cnt=0;
+  let cnt = 0;
   const tipos = {
     entrada:    '<span class="badge badge-green">Entrada</span>',
     saida:      '<span class="badge badge-red">Saída</span>',
@@ -1270,9 +1362,8 @@ window.loadEstoque = async function() {
     saida_auto: '<span class="badge badge-blue">Auto</span>',
     ajuste:     '<span class="badge badge-yellow">Ajuste</span>',
   };
-  snap.forEach(d => {
+  filtered.forEach(m => {
     cnt++;
-    const m   = d.data();
     const mat = MATERIAIS.find(x => x.id === m.material);
     tbody.innerHTML += `<tr>
       <td>${m.data?m.data.split("-").reverse().join("/"):"—"}</td>
@@ -1287,7 +1378,18 @@ window.loadEstoque = async function() {
   if(!cnt) tbody.innerHTML = '<tr><td colspan="7" class="empty">Nenhuma movimentação registrada.</td></tr>';
 };
 
+window.applyMovFilter = function() {
+  renderMovimentacoes();
+};
+
+window.clearMovFilter = function() {
+  document.getElementById("filter-mov-material").value = "all";
+  document.getElementById("filter-mov-tipo").value = "all";
+  renderMovimentacoes();
+};
+
 window.salvarMovimentacao = async function() {
+  if(guestMode) { showToast("Modo visitante: edição bloqueada.", true); return; }
   const material = document.getElementById("m-material").value;
   const tipo     = document.getElementById("m-tipo").value;
   const qtd      = parseFloat(document.getElementById("m-qtd").value)||0;
@@ -1297,7 +1399,7 @@ window.salvarMovimentacao = async function() {
     await addDoc(collection(db,COL_MOVS), {
       material, tipo, qtd, data:data_,
       nota:        document.getElementById("m-nota").value.trim(),
-      responsavel: document.getElementById("m-resp").value.trim(),
+      responsavel: document.getElementById("m-resp").value.trim() || getCurrentUserLabel(),
       obs:         document.getElementById("m-obs").value.trim(),
       createdAt:   serverTimestamp(),
     });
@@ -1722,6 +1824,7 @@ initApp();
     pedriscoGroup.visible = pedriscoStock > 10;
   }
   window.updateSiloFill = updateSiloFill;
+  window.resizeSiloCanvas = resize;
   updateSiloFill();
 
   function setButtonState(button, active){
