@@ -101,8 +101,8 @@
   .progress-fill { height: 100%; border-radius: 3px; transition: width .5s; }
   .silo-card { margin-bottom: 20px; }
   .silo-title { font-size: 13px; color: var(--text-dim); margin-bottom: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .8px; }
-  .silo-container { display: flex; align-items: center; justify-content: center; margin-bottom: 16px; }
-  .silo-shell { position: relative; width: 140px; height: 260px; border: 5px solid var(--accent); border-radius: 28px 28px 20px 20px; background: linear-gradient(to bottom, #f8f9fb 0%, #eef2f8 100%); overflow: hidden; box-shadow: 0 8px 24px rgba(26,58,107,0.15); display: flex; align-items: center; justify-content: center; }
+  .silo-volume-label { position: absolute; top: 48%; left: 50%; transform: translate(-50%, -50%); color: #ffffff; font-family: var(--font-head); font-size: 18px; font-weight: 800; text-align: center; pointer-events: none; text-shadow: 0 0 12px rgba(0,0,0,.55); z-index: 9; }
+  .silo-caption { text-align: center; font-size: 11px; color: var(--text-dim); margin-top: 6px; font-weight: 600; text-transform: uppercase; letter-spacing: .6px; }
   .silo-shell::before { content: ""; position: absolute; top: -10px; left: 50%; transform: translateX(-50%); width: 60px; height: 18px; border-radius: 12px 12px 0 0; background: var(--accent); border: 5px solid var(--accent); border-bottom: none; z-index: 10; }
   .silo-name { position: absolute; font-family: var(--font-head); font-size: 16px; font-weight: 800; color: var(--accent); letter-spacing: 1px; text-transform: uppercase; z-index: 5; writing-mode: vertical-rl; text-orientation: mixed; transform: rotate(180deg); }
   .silo-fill { position: absolute; left: 0; bottom: 0; width: 100%; background: linear-gradient(to bottom, #999 0%, #6f6f6f 100%); transition: height .8s cubic-bezier(0.34, 1.56, 0.64, 1); border-radius: 0 0 15px 15px; z-index: 1; }
@@ -215,14 +215,30 @@
           <div class="card-title">Estoque Atual</div>
           <div id="dash-silo-card" class="silo-card">
             <div class="silo-title">Silo de Cimento</div>
-            <div class="silo-container">
-              <div class="silo-shell">
-                <div class="silo-name">BUCAGRAN S</div>
-                <div class="silo-fill" style="height:0%"></div>
+            <div id="wrapSilo" style="width:100%;height:360px;position:relative;background:#0d1117;border-radius:16px;overflow:hidden;">
+              <div id="labels" style="position:absolute;top:12px;left:14px;z-index:9;pointer-events:none;">
+                <div style="font-size:10px;letter-spacing:.15em;color:#4a90d9;font-family:monospace;opacity:.8;">BUCAGRAN S</div>
+                <div style="font-size:17px;font-weight:500;color:#fff;letter-spacing:.04em;">SILO 3D</div>
               </div>
+              <div id="info" style="position:absolute;top:12px;right:14px;z-index:9;pointer-events:none;text-align:right;">
+                <div style="font-size:10px;font-family:monospace;color:#4a90d9;letter-spacing:.1em;line-height:1.9;">
+                  ALTURA<span style="color:#fff;margin-left:6px;">18 m</span><br>
+                  DIAM.<span style="color:#fff;margin-left:6px;">4 m</span><br>
+                  CAP.<span style="color:#fff;margin-left:6px;">80 t</span>
+                </div>
+              </div>
+              <div id="hint" style="position:absolute;bottom:52px;right:14px;font-size:10px;font-family:monospace;color:rgba(224,230,239,.3);z-index:9;pointer-events:none;text-align:right;line-height:1.9;">
+                Arraste · Scroll zoom<br>Botão direito pan
+              </div>
+              <div id="silo-volume-label" class="silo-volume-label">Carregando...</div>
+              <div style="position:absolute;bottom:12px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:9;">
+                <button id="btn-rot" onclick="toggleRot()" style="font-family:monospace;font-size:10px;letter-spacing:.1em;padding:5px 12px;background:rgba(74,144,217,.18);border:1px solid #4a90d9;color:#4a90d9;border-radius:3px;cursor:pointer;">■ ROTAÇÃO</button>
+                <button id="btn-wire" onclick="toggleWire()" style="font-family:monospace;font-size:10px;letter-spacing:.1em;padding:5px 12px;background:rgba(13,17,23,.8);border:1px solid rgba(74,144,217,.35);color:rgba(224,230,239,.6);border-radius:3px;cursor:pointer;">WIREFRAME</button>
+                <button id="btn-xray" onclick="toggleXray()" style="font-family:monospace;font-size:10px;letter-spacing:.1em;padding:5px 12px;background:rgba(13,17,23,.8);border:1px solid rgba(74,144,217,.35);color:rgba(224,230,239,.6);border-radius:3px;cursor:pointer;">CORTE</button>
+              </div>
+              <canvas id="silo-canvas" style="width:100%;height:100%;display:block;"></canvas>
             </div>
-            <div class="silo-label">Carregando...</div>
-            <div class="silo-caption">Capacidade 80 t</div>
+            <div class="silo-caption">Interativo / Rotação / Wireframe / Corte</div>
           </div>
           <div id="dash-estoque-list"><div class="empty"><span class="spinner"></span> Carregando...</div></div>
         </div>
@@ -260,6 +276,7 @@
           <div class="form-group" style="max-width:150px"><label>Data Início</label><input type="date" id="f-bet-ini"></div>
           <div class="form-group" style="max-width:150px"><label>Data Fim</label><input type="date" id="f-bet-fim"></div>
           <div class="form-group" style="max-width:180px"><label>Traço</label><select id="f-bet-traco"><option value="">Todos</option></select></div>
+          <div class="form-group" style="max-width:180px"><label>Nº Liberação</label><input type="text" id="f-bet-liberacao" placeholder="ex: LC-001"></div>
           <div style="display:flex;gap:8px;align-items:flex-end;">
             <button class="btn btn-secondary" onclick="loadBetonadas()">Filtrar</button>
             <button class="btn btn-secondary" onclick="clearFiltrosBetonadas()">Limpar</button>
@@ -324,6 +341,7 @@
           <div class="inline-row no-print" style="margin-bottom:16px;">
             <div class="form-group"><label>Período Início</label><input type="date" id="r-ini"></div>
             <div class="form-group"><label>Período Fim</label><input type="date" id="r-fim"></div>
+            <div class="form-group"><label>Nº Liberação</label><input type="text" id="r-liberacao" placeholder="ex: LC-001"></div>
             <div class="form-group"><label>Estrutura</label>
               <select id="r-estrutura"><option value="">Todas</option></select>
             </div>
@@ -452,6 +470,7 @@
       <div class="form-group"><label>Volume Aplicado (m³) *</label><input type="number" id="b-volume" step="0.1" placeholder="1.0" oninput="calcularConsumo()"></div>
       <div class="form-group"><label>Operador</label><input id="b-operador" placeholder="Nome do operador"></div>
     </div>
+    <div class="form-group"><label>Previsto por liberação (m³)</label><input type="number" id="b-volume-previsto" step="0.1" placeholder="0.0"></div>
     <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:12px;margin-bottom:14px;">
       <div style="font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--text-dim);margin-bottom:10px;">⏱ Início da Concretagem</div>
       <div class="grid-2">
@@ -479,6 +498,16 @@
       <div style="font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--text-dim);margin-bottom:8px;">Consumo a descontar do estoque</div>
       <div class="grid-3" id="bet-consumo-vals"></div>
       <div id="bet-estoque-warn" style="margin-top:8px;"></div>
+      <div class="divider"></div>
+      <div style="font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--text-dim);margin-bottom:8px;">Ajuste real de consumo (opcional)</div>
+      <div class="grid-3">
+        <div class="form-group"><label>Cimento real (kg)</label><input type="number" id="b-real-cimento" step="1" min="0" oninput="calcularConsumo()"></div>
+        <div class="form-group"><label>Areia natural real (kg)</label><input type="number" id="b-real-areia_nat" step="1" min="0" oninput="calcularConsumo()"></div>
+        <div class="form-group"><label>Areia artificial real (kg)</label><input type="number" id="b-real-areia_art" step="1" min="0" oninput="calcularConsumo()"></div>
+        <div class="form-group"><label>Pedrisco real (kg)</label><input type="number" id="b-real-pedrisco" step="1" min="0" oninput="calcularConsumo()"></div>
+        <div class="form-group"><label>Brita real (kg)</label><input type="number" id="b-real-brita" step="1" min="0" oninput="calcularConsumo()"></div>
+        <div class="form-group"><label>Água real (L)</label><input type="number" id="b-real-agua" step="1" min="0" oninput="calcularConsumo()"></div>
+      </div>
     </div>
     <div class="form-group"><label>Observações</label><textarea id="b-obs"></textarea></div>
     <div class="modal-footer">
@@ -561,6 +590,7 @@
 
 <div id="toast"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/three@0.160/build/three.min.js"></script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
@@ -588,6 +618,7 @@ const COL_ESTRUTURAS  = "cc_estruturas";
 
 let tracosCache      = [];
 let estoqueCache     = {};
+window.getEstoqueCache = () => estoqueCache;
 let estruturasCache  = [];
 
 const MATERIAIS = [
@@ -631,7 +662,7 @@ document.getElementById("btn-novo-traco").addEventListener("click", () => {
 });
 
 document.getElementById("btn-nova-betonada").addEventListener("click", () => {
-  ["b-liberacao","b-data-fim","b-hora-fim","b-volume","b-local","b-descricao","b-operador","b-cp-id","b-obs"].forEach(id => document.getElementById(id).value = "");
+  ["b-liberacao","b-data-fim","b-hora-fim","b-volume","b-local","b-descricao","b-operador","b-cp-id","b-obs","b-volume-previsto","b-real-cimento","b-real-areia_nat","b-real-areia_art","b-real-pedrisco","b-real-brita","b-real-agua"].forEach(id => document.getElementById(id).value = "");
   document.getElementById("b-data").value  = today();
   document.getElementById("b-hora").value  = nowTime();
   document.getElementById("b-traco").value = "";
@@ -777,12 +808,10 @@ window.loadDashboard = async function() {
     document.getElementById("d-alertas").textContent = alertas;
 
     const siloSaldo = estoqueCache['cimento']||0;
-    const siloPct = Math.max(0, Math.min(100, (siloSaldo / 80000) * 100));
     const siloTons = fmt(siloSaldo/1000, 1);
-    const siloCard = document.getElementById("dash-silo-card");
-    if(siloCard) {
-      siloCard.querySelector(".silo-fill").style.height = siloPct + "%";
-      siloCard.querySelector(".silo-label").textContent = `${siloTons} t / 80 t`;
+    const siloLabel = document.getElementById("silo-volume-label");
+    if(siloLabel) {
+      siloLabel.textContent = `${siloTons} t / 80 t`;
     }
 
     const estoqueDiv = document.getElementById("dash-estoque-list");
@@ -815,6 +844,7 @@ window.loadDashboard = async function() {
       </div>`;
     });
     if(!cnt) betDiv.innerHTML = '<div class="empty">Nenhuma betonada registrada.</div>';
+    if(window.updateSiloFill) window.updateSiloFill();
   } catch(e) { showToast("Erro ao carregar dashboard: "+e.message, true); }
 };
 
@@ -918,6 +948,7 @@ window.loadBetonadas = async function() {
   const ini      = document.getElementById("f-bet-ini").value;
   const fim      = document.getElementById("f-bet-fim").value;
   const trFilter = document.getElementById("f-bet-traco").value;
+  const libFilter = document.getElementById("f-bet-liberacao").value.trim().toLowerCase();
   const snap     = await getDocs(query(collection(db,COL_BETONADAS), orderBy("data","desc")));
   const tbody    = document.getElementById("betonadas-tbody");
   tbody.innerHTML = "";
@@ -928,6 +959,7 @@ window.loadBetonadas = async function() {
     if(ini && dt < ini) return;
     if(fim && dt > fim) return;
     if(trFilter && b.tracoid !== trFilter) return;
+    if(libFilter && !String(b.liberacao||"").toLowerCase().includes(libFilter)) return;
     count++; total += parseFloat(b.volume)||0;
     const tr = tracosCache.find(t => t.id === b.tracoid);
     const fmtDT = (d,h) => d ? d.split("-").reverse().join("/")+(h?" "+h:"") : "—";
@@ -936,7 +968,7 @@ window.loadBetonadas = async function() {
       <td>${fmtDT(dt,b.hora)}</td>
       <td>${fmtDT(b.dataFim||dt,b.horaFim)||"—"}</td>
       <td><strong>${tr?tr.codigo:"—"}</strong></td>
-      <td style="color:var(--accent);font-weight:600">${fmt((estruturasCache.find(x=>x.nome.toLowerCase()===(b.local||"").toLowerCase())||{}).volumePrevisto||0)} m³</td>
+      <td style="color:var(--accent);font-weight:600">${fmt(b.volumePrevisto || (estruturasCache.find(x=>x.nome.toLowerCase()===(b.local||"").toLowerCase())||{}).volumePrevisto || 0)} m³</td>
       <td style="color:var(--accent);font-weight:600">${fmt(b.volume)} m³</td>
       <td>${b.local||"—"}</td><td>${b.descricao||"—"}</td><td>${b.operador||"—"}</td>
       <td>${b.cp==="sim"?'<span class="badge badge-green">Sim</span>':'<span class="badge badge-red">Não</span>'}</td>
@@ -955,7 +987,7 @@ window.loadBetonadas = async function() {
 };
 
 window.clearFiltrosBetonadas = function() {
-  ["f-bet-ini","f-bet-fim","f-bet-traco"].forEach(id => document.getElementById(id).value = "");
+  ["f-bet-ini","f-bet-fim","f-bet-traco","f-bet-liberacao"].forEach(id => document.getElementById(id).value = "");
   loadBetonadas();
 };
 
@@ -968,7 +1000,7 @@ window.calcularConsumo = function() {
   if(!t) { preview.style.display="none"; return; }
   preview.style.display = "block";
   const matBrita = t.tipoBrita||"brita1";
-  const consumos = [
+  const planned = [
     {mat:"cimento",   label:"Cimento",         val:(t.cimento||0)*vol},
     {mat:"areia_nat", label:"Areia Natural",    val:(t.areiaNat||0)*vol},
     {mat:"areia_art", label:"Areia Artificial", val:(t.areiaArt||0)*vol},
@@ -976,16 +1008,32 @@ window.calcularConsumo = function() {
     {mat:matBrita,    label:(MATERIAIS.find(x=>x.id===matBrita)||{label:"Brita"}).label, val:(t.brita||0)*vol},
     {mat:"agua",      label:"Água",             val:(t.agua||0)*vol},
   ].filter(c => c.val > 0);
-  if(t.aditivoRet) consumos.push({mat:"aditivo_ret",label:"Adt. Retardador",val:t.aditivoRet*vol});
-  if(t.aditivoPla) consumos.push({mat:"aditivo_pla",label:"Adt. Plastificante",val:t.aditivoPla*vol});
+  if(t.aditivoRet) planned.push({mat:"aditivo_ret",label:"Adt. Retardador",val:t.aditivoRet*vol});
+  if(t.aditivoPla) planned.push({mat:"aditivo_pla",label:"Adt. Plastificante",val:t.aditivoPla*vol});
+
+  const consumos = planned.map(c => {
+      const overrideId = c.mat.startsWith("brita") ? "b-real-brita" : `b-real-${c.mat}`;
+      const actual = parseFloat(document.getElementById(overrideId)?.value) || 0;
+    return {
+      mat:c.mat,
+      label:c.label,
+      planned:c.val,
+      val: actual > 0 ? actual : c.val,
+      actual: actual > 0 ? actual : null,
+      unit,
+    };
+  });
+
   document.getElementById("bet-consumo-vals").innerHTML = consumos.map(c =>
     `<div class="stat-card" style="padding:10px;">
       <div class="stat-label">${c.label}</div>
-      <div style="font-family:var(--font-head);font-size:20px;font-weight:700;color:var(--accent)">${fmt(c.val,0)} kg</div>
+      <div style="font-family:var(--font-head);font-size:20px;font-weight:700;color:var(--accent)">${fmt(c.val,0)} ${c.unit}</div>
+      ${c.actual ? `<div style="font-size:11px;color:var(--text-dim);margin-top:6px;">Plano: ${fmt(c.planned,0)} ${c.unit}</div>` : ""}
     </div>`).join("");
+
   const baixos = consumos.filter(c => (estoqueCache[c.mat]||0) < c.val);
   document.getElementById("bet-estoque-warn").innerHTML = baixos.length
-    ? baixos.map(c => `<div class="alert alert-danger">⚠️ Estoque insuficiente de <strong>${c.label}</strong>: disponível ${fmt(estoqueCache[c.mat]||0,0)} kg, necessário ${fmt(c.val,0)} kg</div>`).join("")
+    ? baixos.map(c => `<div class="alert alert-danger">⚠️ Estoque insuficiente de <strong>${c.label}</strong>: disponível ${fmt(estoqueCache[c.mat]||0,0)} ${c.unit}, necessário ${fmt(c.val,0)} ${c.unit}</div>`).join("")
     : '<div class="alert alert-success">✅ Estoque suficiente para esta betonada.</div>';
 };
 
@@ -998,30 +1046,44 @@ window.salvarBetonada = async function() {
   const t        = tracosCache.find(x => x.id === tracoid);
   const matBrita = t ? (t.tipoBrita||"brita1") : "brita1";
   try {
+    const planned = t ? [
+      {mat:"cimento",   val:(t.cimento||0)*volume},
+      {mat:"areia_nat", val:(t.areiaNat||0)*volume},
+      {mat:"areia_art", val:(t.areiaArt||0)*volume},
+      {mat:"pedrisco",  val:(t.pedrisco||0)*volume},
+      {mat:matBrita,    val:(t.brita||0)*volume},
+      {mat:"agua",      val:(t.agua||0)*volume},
+    ].filter(c => c.val > 0) : [];
+    if(t && t.aditivoRet) planned.push({mat:"aditivo_ret",val:t.aditivoRet*volume});
+    if(t && t.aditivoPla) planned.push({mat:"aditivo_pla",val:t.aditivoPla*volume});
+
+    const consumos = planned.map(c => {
+      const overrideId = c.mat.startsWith("brita") ? "b-real-brita" : `b-real-${c.mat}`;
+      const actual = parseFloat(document.getElementById(overrideId)?.value) || 0;
+      return {mat:c.mat, val: actual > 0 ? actual : c.val, planned:c.val};
+    });
+    const realConsumos = consumos.reduce((acc,c) => {
+      acc[c.mat] = c.val;
+      return acc;
+    }, {});
+
     await addDoc(collection(db,COL_BETONADAS), {
       tracoid, volume, data:data_, hora,
       liberacao: document.getElementById("b-liberacao").value.trim(),
       local:     document.getElementById("b-local").value.trim(),
       descricao: document.getElementById("b-descricao").value.trim(),
+      volumePrevisto: parseFloat(document.getElementById("b-volume-previsto").value) || 0,
       dataFim:   document.getElementById("b-data-fim").value,
       horaFim:   document.getElementById("b-hora-fim").value,
       operador:  document.getElementById("b-operador").value.trim(),
       cp:        document.getElementById("b-cp").value,
       cpId:      document.getElementById("b-cp-id").value.trim(),
       obs:       document.getElementById("b-obs").value.trim(),
+      realConsumos: Object.keys(realConsumos).length ? realConsumos : null,
       createdAt: serverTimestamp(),
     });
+
     if(t) {
-      const consumos = [
-        {mat:"cimento",   val:(t.cimento||0)*volume},
-        {mat:"areia_nat", val:(t.areiaNat||0)*volume},
-        {mat:"areia_art", val:(t.areiaArt||0)*volume},
-        {mat:"pedrisco",  val:(t.pedrisco||0)*volume},
-        {mat:matBrita,    val:(t.brita||0)*volume},
-        {mat:"agua",      val:(t.agua||0)*volume},
-      ].filter(c => c.val > 0);
-      if(t.aditivoRet) consumos.push({mat:"aditivo_ret",val:t.aditivoRet*volume});
-      if(t.aditivoPla) consumos.push({mat:"aditivo_pla",val:t.aditivoPla*volume});
       for(const c of consumos) {
         await setEstoque(c.mat, (estoqueCache[c.mat]||0) - c.val);
         await addDoc(collection(db,COL_MOVS), {
@@ -1141,6 +1203,7 @@ window.salvarMovimentacao = async function() {
 window.gerarRelatorio = async function() {
   const ini  = document.getElementById("r-ini").value;
   const fim  = document.getElementById("r-fim").value;
+  const liberacaoFilter = document.getElementById("r-liberacao").value.trim().toLowerCase();
   const estruturaFilter = document.getElementById("r-estrutura").value.trim().toLowerCase();
   const snap = await getDocs(query(collection(db,COL_BETONADAS), orderBy("data")));
   const porTraco={};
@@ -1152,6 +1215,7 @@ window.gerarRelatorio = async function() {
     const b = { id:d.id, ...d.data() };
     if(ini && b.data < ini) return;
     if(fim && b.data > fim) return;
+    if(liberacaoFilter && !String(b.liberacao||"").toLowerCase().includes(liberacaoFilter)) return;
     if(estruturaFilter && String(b.local||"").toLowerCase() !== estruturaFilter) return;
     const vol = parseFloat(b.volume)||0;
     totalVol += vol;
@@ -1213,7 +1277,7 @@ window.gerarRelatorio = async function() {
         <td>${fmtD(b.dataFim)}</td>
         <td>${b.horaFim||"—"}</td>
         <td><strong>${t?t.codigo:"—"}</strong></td>
-        <td style="color:var(--accent);font-weight:600;text-align:center">${fmt((estruturasCache.find(x=>x.nome.toLowerCase()===(b.local||"").toLowerCase())||{}).volumePrevisto||0)} m³</td>
+        <td style="color:var(--accent);font-weight:600;text-align:center">${fmt(b.volumePrevisto || (estruturasCache.find(x=>x.nome.toLowerCase()===(b.local||"").toLowerCase())||{}).volumePrevisto || 0)} m³</td>
         <td style="color:var(--accent);font-weight:600;text-align:center">${fmt(b.volume)} m³</td>
         <td>${b.local||"—"}</td>
         <td>${b.descricao||"—"}</td>
@@ -1300,6 +1364,214 @@ async function importarTracosTabela() {
 }
 
 initApp();
+</script>
+
+<script>
+(function(){
+  const wrap = document.getElementById('wrapSilo');
+  const canvas = document.getElementById('silo-canvas');
+  if(!wrap || !canvas || !window.THREE) return;
+
+  const renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:false});
+  renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+
+  const camera = new THREE.PerspectiveCamera(55, wrap.clientWidth / wrap.clientHeight, 0.1, 400);
+  camera.position.set(12, 6, 20);
+
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x0d1117);
+  scene.fog = new THREE.FogExp2(0x0d1117, 0.018);
+
+  const sun = new THREE.DirectionalLight(0xfff5e0, 2.4);
+  sun.position.set(12, 24, 10);
+  scene.add(sun);
+  scene.add(new THREE.AmbientLight(0x8eb4d8, 0.7));
+  const fillLight = new THREE.DirectionalLight(0x4466aa, 0.5);
+  fillLight.position.set(-10, 4, -8);
+  scene.add(fillLight);
+  const rim = new THREE.PointLight(0x4a90d9, 1.0, 40);
+  rim.position.set(-3, 12, -4);
+  scene.add(rim);
+
+  const steelMat = new THREE.MeshStandardMaterial({color:0xc8d0db, metalness:0.95, roughness:0.15});
+  const siloMat = new THREE.MeshStandardMaterial({color:0x0b4ea2, metalness:0.72, roughness:0.22, transparent:true, opacity:0.72});
+  const siloWire = new THREE.MeshStandardMaterial({color:0x4a90d9, wireframe:true, metalness:0.5, roughness:0.3});
+  const fillMat = new THREE.MeshStandardMaterial({color:0x8a8d97, roughness:0.85, transparent:true, opacity:0.75});
+  const groundMat = new THREE.MeshStandardMaterial({color:0x161b22, roughness:1.0});
+
+  const grp = new THREE.Group();
+  scene.add(grp);
+
+  const gnd = new THREE.Mesh(new THREE.PlaneGeometry(60, 60), groundMat);
+  gnd.rotation.x = -Math.PI/2;
+  gnd.position.y = -5.1;
+  gnd.receiveShadow = true;
+  scene.add(gnd);
+
+  function add(geo, mat, x, y, z, shadow = true) {
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.position.set(x||0, y||0, z||0);
+    if(shadow) mesh.castShadow = true;
+    grp.add(mesh);
+    return mesh;
+  }
+
+  add(new THREE.CylinderGeometry(3.0, 3.3, 0.7, 32), new THREE.MeshStandardMaterial({color:0x4a5060, metalness:0.05, roughness:0.95}), 0, -4.75, 0, false);
+
+  const legCount = 6;
+  for(let i=0;i<legCount;i++){
+    const a = (i/legCount)*Math.PI*2;
+    const lx = Math.cos(a)*1.8, lz = Math.sin(a)*1.8;
+    add(new THREE.BoxGeometry(0.16, 5.6, 0.16), steelMat, lx, -2.1, lz);
+    const dg = new THREE.Mesh(new THREE.BoxGeometry(0.07,0.07,3.3), steelMat);
+    dg.position.set(lx*0.5, -2.0, lz*0.5);
+    dg.lookAt(0, -4.5, 0);
+    grp.add(dg);
+  }
+
+  const ringBase = new THREE.Mesh(new THREE.TorusGeometry(2.0, 0.11, 8, 48), steelMat);
+  ringBase.rotation.x = Math.PI/2;
+  ringBase.position.y = 0.15;
+  grp.add(ringBase);
+
+  add(new THREE.ConeGeometry(2.0, 3.2, 64), siloMat, 0, 1.7, 0);
+  add(new THREE.CylinderGeometry(0.28, 0.28, 1.2, 32), steelMat, 0, -0.3, 0);
+  add(new THREE.CylinderGeometry(0.44, 0.44, 0.1, 32), steelMat, 0, 0.25, 0);
+
+  add(new THREE.CylinderGeometry(2.0, 2.0, 10, 64), siloMat, 0, 8.3, 0);
+  [4,7,10,12.5].forEach(y=>{
+    const r = new THREE.Mesh(new THREE.TorusGeometry(2.04, 0.05, 8, 80), steelMat);
+    r.rotation.x = Math.PI/2;
+    r.position.y = y;
+    grp.add(r);
+  });
+
+  add(new THREE.SphereGeometry(2.0, 64, 32, 0, Math.PI*2, 0, Math.PI*0.35), siloMat, 0, 13.3, 0);
+  add(new THREE.CylinderGeometry(0.34, 0.34, 2.0, 32), steelMat, 0, 14.8, 0);
+  add(new THREE.CylinderGeometry(0.54, 0.54, 0.11, 32), steelMat, 0, 15.86, 0);
+  add(new THREE.CylinderGeometry(2.5, 2.5, 0.08, 64), steelMat, 0, 13.4, 0, false);
+
+  [0,0.6].forEach(dy=>{
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(2.5, 0.04, 8, 100), new THREE.MeshStandardMaterial({color:0xd4a017, metalness:0.4, roughness:0.5}));
+    ring.rotation.x = Math.PI/2;
+    ring.position.y = 13.55 + dy;
+    grp.add(ring);
+  });
+  for(let i=0;i<12;i++){
+    const a = (i/12)*Math.PI*2;
+    const p = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.68, 0.04), new THREE.MeshStandardMaterial({color:0xd4a017, metalness:0.4, roughness:0.5}));
+    p.position.set(Math.cos(a)*2.5, 13.85, Math.sin(a)*2.5);
+    grp.add(p);
+  }
+
+  const sh = 13.5;
+  [-0.2,0.2].forEach(dx=>{
+    const s = new THREE.Mesh(new THREE.BoxGeometry(0.04, sh, 0.04), steelMat);
+    s.position.set(2.18+dx, sh/2-4.5, 0);
+    grp.add(s);
+  });
+  for(let i=0;i<28;i++){
+    const sg = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.04, 0.04), steelMat);
+    sg.position.set(2.18, -4 + i*(sh/28), 0);
+    grp.add(sg);
+  }
+
+  const fillMesh = add(new THREE.CylinderGeometry(1.8, 1.8, 7.2, 64), fillMat, 0, 6.9, 0, false);
+
+  const siloMeshes = [];
+  grp.traverse(o=>{ if(o.isMesh && o.material===siloMat) siloMeshes.push(o); });
+
+  const controls = {autoRot:true, wireOn:false, xrayOn:false, isDragging:false, prevX:0, prevY:0, rotY:0, rotX:0.15, zoom:1};
+
+  function resize(){
+    const W = wrap.clientWidth;
+    const H = wrap.clientHeight;
+    renderer.setSize(W,H);
+    camera.aspect = W/H;
+    camera.updateProjectionMatrix();
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  function updateSiloFill(){
+    const stock = (window.getEstoqueCache && window.getEstoqueCache()['cimento']) || 0;
+    const pct = Math.max(0, Math.min(100, (stock / 80000) * 100));
+    const scale = Math.max(0.05, pct / 100);
+    fillMesh.scale.y = scale;
+    fillMesh.position.y = 3.3 + (7.2 * scale) / 2;
+    const label = document.getElementById('silo-volume-label');
+    if(label) label.textContent = `${(stock/1000).toFixed(1)} t / 80 t`;
+    fillMat.color.set(stock <= 0 ? 0x555555 : 0x8a8d97);
+  }
+  window.updateSiloFill = updateSiloFill;
+  updateSiloFill();
+
+  function setButtonState(button, active){
+    button.style.background = active ? 'rgba(74,144,217,.18)' : 'rgba(13,17,23,.8)';
+    button.style.borderColor = active ? '#4a90d9' : 'rgba(74,144,217,.35)';
+    button.style.color = active ? '#4a90d9' : 'rgba(224,230,239,.6)';
+  }
+
+  window.toggleRot = function(){
+    controls.autoRot = !controls.autoRot;
+    setButtonState(document.getElementById('btn-rot'), controls.autoRot);
+  };
+
+  window.toggleWire = function(){
+    controls.wireOn = !controls.wireOn;
+    setButtonState(document.getElementById('btn-wire'), controls.wireOn);
+    siloMeshes.forEach(m => m.material = controls.wireOn ? siloWire : siloMat);
+  };
+
+  window.toggleXray = function(){
+    controls.xrayOn = !controls.xrayOn;
+    setButtonState(document.getElementById('btn-xray'), controls.xrayOn);
+    siloMat.transparent = controls.xrayOn;
+    siloMat.opacity = controls.xrayOn ? 0.22 : 1.0;
+    siloMat.side = controls.xrayOn ? THREE.DoubleSide : THREE.FrontSide;
+    fillMat.opacity = controls.xrayOn ? 0.88 : 0.95;
+  };
+
+  function pointerDown(e){
+    controls.isDragging = true;
+    controls.prevX = e.clientX;
+    controls.prevY = e.clientY;
+  }
+  function pointerUp(){ controls.isDragging = false; }
+  function pointerMove(e){
+    if(!controls.isDragging) return;
+    controls.rotY += (e.clientX - controls.prevX) * 0.008;
+    controls.rotX += (e.clientY - controls.prevY) * 0.006;
+    controls.rotX = Math.max(-0.6, Math.min(0.8, controls.rotX));
+    controls.prevX = e.clientX;
+    controls.prevY = e.clientY;
+    controls.autoRot = false;
+    setButtonState(document.getElementById('btn-rot'), false);
+  }
+
+  canvas.addEventListener('mousedown', pointerDown);
+  window.addEventListener('mouseup', pointerUp);
+  window.addEventListener('mousemove', pointerMove);
+  canvas.addEventListener('wheel', e => { controls.zoom = Math.max(0.5, Math.min(2.5, controls.zoom + e.deltaY*0.001)); }, {passive:true});
+
+  canvas.addEventListener('touchstart', e => { controls.isDragging=true; controls.prevX=e.touches[0].clientX; controls.prevY=e.touches[0].clientY; });
+  window.addEventListener('touchend', pointerUp);
+  window.addEventListener('touchmove', e => { if(!controls.isDragging) return; controls.rotY += (e.touches[0].clientX-controls.prevX)*0.01; controls.rotX += (e.touches[0].clientY-controls.prevY)*0.008; controls.rotX = Math.max(-0.6, Math.min(0.8, controls.rotX)); controls.prevX=e.touches[0].clientX; controls.prevY=e.touches[0].clientY; });
+
+  const clock = new THREE.Clock();
+  function animate(){
+    requestAnimationFrame(animate);
+    if(controls.autoRot) controls.rotY += 0.005;
+    const r = 18 * controls.zoom;
+    camera.position.x = Math.sin(controls.rotY) * Math.cos(controls.rotX) * r;
+    camera.position.y = Math.sin(controls.rotX) * r + 4;
+    camera.position.z = Math.cos(controls.rotY) * Math.cos(controls.rotX) * r;
+    camera.lookAt(0,4,0);
+    rim.intensity = 1.0 + Math.sin(clock.getElapsedTime()*1.6) * 0.12;
+    renderer.render(scene, camera);
+  }
+  animate();
+})();
 </script>
 
 <script>
